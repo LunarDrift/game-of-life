@@ -5,16 +5,16 @@ pygame.init()
 
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
-YELLOW = (255, 255, 0)
+YELLOW = (200, 200, 0)
 
 WIDTH, HEIGHT= 800, 800
-TILE_SIZE = 5
+TILE_SIZE = 10
 GRID_WIDTH = WIDTH // TILE_SIZE
 GRID_HEIGHT = HEIGHT // TILE_SIZE
 FPS = 120
 
-MIN_POSITIONS = 20
-MAX_POSITIONS = 100
+MIN_POSITIONS = 5
+MAX_POSITIONS = 20
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -28,7 +28,27 @@ def gen(num):
 
 
 
-def draw_grid(positions):
+def draw_grid(show=False):
+    """Draws the grid lines on the screen."""
+    if show:
+        for row in range(GRID_HEIGHT):
+            pygame.draw.line(
+                screen,
+                BLACK,
+                (0, row * TILE_SIZE),
+                (WIDTH, row * TILE_SIZE)
+            )
+        for col in range(GRID_WIDTH):
+            pygame.draw.line(
+                screen,
+                BLACK,
+                (col * TILE_SIZE, 0),
+                (col * TILE_SIZE, HEIGHT)
+            )
+
+
+def fill_grid(positions):
+    """Fills the grid with live cells at the given positions."""
     for position in positions:
         col, row = position
         top_left = (col * TILE_SIZE, row * TILE_SIZE)
@@ -37,23 +57,8 @@ def draw_grid(positions):
             YELLOW,
             (*top_left, TILE_SIZE, TILE_SIZE)
         )
-        
-    for row in range(GRID_HEIGHT):
-        pygame.draw.line(
-            screen,
-            BLACK,
-            (0, row * TILE_SIZE),
-            (WIDTH, row * TILE_SIZE)
-        )
-    for col in range(GRID_WIDTH):
-        pygame.draw.line(
-            screen,
-            BLACK,
-            (col * TILE_SIZE, 0),
-            (col * TILE_SIZE, HEIGHT)
-        )
 
-    
+
 def adjust_grid(positions):
     """Adjusts the grid based on the rules of Conway's Game of Life."""
     all_neighbors = set()  # To store all neighbors of live cells
@@ -114,7 +119,8 @@ def main():
     running = True
     playing = False
     count = 0
-    update_freq = 100
+    update_freq = 30
+    show_grid = False
 
     positions = set()
     while running:
@@ -127,21 +133,27 @@ def main():
                 running = False
 
         # -------------------------------------------- Mouse Events --------------------------------------------
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                # Get mouse position and convert to grid coordinates
+            if pygame.mouse.get_pressed()[0]:
+                # Click and drag to draw new cells
                 x, y = pygame.mouse.get_pos()
                 col = x // TILE_SIZE
                 row = y // TILE_SIZE
                 pos = (col, row)
 
-                # Toggle cell state
+                if 0 <= col <= GRID_WIDTH and 0 <= row <= GRID_HEIGHT:
+                    positions.add(pos)
+
+
+            if pygame.mouse.get_pressed()[2]:
+                # Right click to remove a cell
+                x, y = pygame.mouse.get_pos()
+                col = x // TILE_SIZE
+                row = y // TILE_SIZE
+                pos = (col, row)
+
                 if pos in positions:
                     # Remove position if it already exists
                     positions.remove(pos)
-                else:
-                    # Add position if it doesn't exist
-                    positions.add(pos)
-
         # -------------------------------------------- Keyboard Events --------------------------------------------
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
@@ -152,9 +164,14 @@ def main():
                     positions.clear()
                     playing = False
                     count = 0
-                elif event.key == pygame.K_g:
+                elif event.key == pygame.K_r:
                     # Generate random positions for cells
                     positions = gen(random.randrange(MIN_POSITIONS, MAX_POSITIONS) * GRID_WIDTH)
+                
+                elif event.key == pygame.K_g:
+                    # Toggle grid lines
+                    show_grid = not show_grid
+                
                 
                 elif event.key == pygame.K_ESCAPE:
                     running = False
@@ -174,7 +191,8 @@ def main():
         # ---------------------------------------------------- DRAW ------------------------------------------------------
 
         screen.fill(GRAY)
-        draw_grid(positions)
+        fill_grid(positions)
+        draw_grid(show_grid)
         pygame.display.flip()
 
 
