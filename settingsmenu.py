@@ -24,11 +24,28 @@ class SettingsMenu:
         self.speed_very_fast = pygame.Rect(14, 100, 173, 20)
 
         # Grid size buttons
-        self.grid_small = pygame.Rect(14, 130, 173, 20)
-        self.grid_normal = pygame.Rect(14, 150, 173, 20)
-        self.grid_large = pygame.Rect(14, 170, 173, 20)
+        self.grid_tiny = pygame.Rect(14, 130, 173, 20)
+        self.grid_small = pygame.Rect(14, 150, 173, 20)
+        self.grid_normal = pygame.Rect(14, 170, 173, 20)
+        self.grid_large = pygame.Rect(14, 190, 173, 20)
 
         self.font = pygame.font.SysFont(None, 24)
+
+
+    def _draw_button(self, screen, rect, label):
+        # Draw semi-transparent button
+        button_surf = pygame.Surface(
+            (rect.width, rect.height),
+            pygame.SRCALPHA
+        )
+        button_surf.fill((120, 120, 120, 100))  # Semi-transparent gray
+        screen.blit(button_surf, rect.topleft)
+
+        txt = self.font.render(label, True, (0, 0, 0))
+        screen.blit(
+            txt,
+            txt.get_rect(center=rect.center)
+        )
 
 
     def handle_event(self, event):
@@ -51,6 +68,8 @@ class SettingsMenu:
                 self.update_freq = 5
             
             # Grid size buttons
+            elif self.grid_tiny.collidepoint(event.pos):
+                self.tile_size = 2
             elif self.grid_small.collidepoint(event.pos):
                 self.tile_size = 5
             elif self.grid_normal.collidepoint(event.pos):
@@ -112,22 +131,7 @@ class SettingsMenu:
         self._draw_button(screen, self.speed_very_fast, "Speed: Very Fast")
 
         # Draw grid size buttons
+        self._draw_button(screen, self.grid_tiny, "Grid Size: Tiny")
         self._draw_button(screen, self.grid_small, "Grid Size: Small")
         self._draw_button(screen, self.grid_normal, "Grid Size: Normal")
         self._draw_button(screen, self.grid_large, "Grid Size: Large")
-
-
-    def _draw_button(self, screen, rect, label):
-        # Draw semi-transparent button
-        button_surf = pygame.Surface(
-            (rect.width, rect.height),
-            pygame.SRCALPHA
-        )
-        button_surf.fill((120, 120, 120, 100))  # Semi-transparent gray
-        screen.blit(button_surf, rect.topleft)
-
-        txt = self.font.render(label, True, (0, 0, 0))
-        screen.blit(
-            txt,
-            txt.get_rect(center=rect.center)
-        )

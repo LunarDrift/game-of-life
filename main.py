@@ -20,6 +20,36 @@ class LifeGame:
         )
         self.view = LifeView(self.screen, self.settings.tile_size)
 
+        # Keep track of previous settings to detect changes
+        self.prev_tile_size = self.settings.tile_size
+        self.prev_show_grid = self.settings.show_grid
+        self.prev_update_freq = self.settings.update_freq
+        self.prev_min_cells = self.settings.min_cells
+        self.prev_max_cells = self.settings.max_cells
+
+
+    def update_simulation_settings(self):
+        # Update dependent settings in simulation if they have changed
+        if self.prev_tile_size != self.settings.tile_size:
+            self.view.tile_size = self.settings.tile_size
+            self.simulation.update_grid_size(WIDTH, HEIGHT, self.settings.tile_size)
+            self.prev_tile_size = self.settings.tile_size
+
+        if self.prev_show_grid != self.settings.show_grid:
+            # If something depends on show_grid, update it here
+            self.prev_show_grid = self.settings.show_grid
+
+        if self.prev_update_freq != self.settings.update_freq:
+            # If we use update_freq elsewhere, we can update it here
+            self.prev_update_freq = self.settings.update_freq
+
+        if (self.prev_min_cells != self.settings.min_cells or
+            self.prev_max_cells != self.settings.max_cells):
+            # If something depends on min/max cells, update it here
+            self.prev_min_cells = self.settings.min_cells
+            self.prev_max_cells = self.settings.max_cells
+
+
     def main(self):
         running = True
         self.playing = False
@@ -69,9 +99,9 @@ class LifeGame:
 
             # Update simulation grid size based on current tile size
             self.simulation.update_grid_size(WIDTH, HEIGHT, self.settings.tile_size)
-            # Keep track of previous tile size and update view if it has changed
-            if self.view.tile_size != self.settings.tile_size:
-                self.view.tile_size = self.settings.tile_size
+
+            # Update any changed settings
+            self.update_simulation_settings()
 
             # Mouse Drawing
             if not self.settings.open:

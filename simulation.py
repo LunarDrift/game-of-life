@@ -13,11 +13,17 @@ class LifeSimulation:
 
     def gen(self, num):
         """Generate `num` amount of random positions on the grid."""
-
-        return set([(random.randrange(0, self.width), random.randrange(0, self.height)) for _ in range(num)])
+        return {
+            (
+                random.randrange(0, self.width),
+                random.randrange(0, self.height)
+            )
+            for _ in range(num)
+        }
     
     
     def step(self):
+        """Advance the simulation by one generation."""
         self.positions = self._next_generation()
 
     
@@ -32,21 +38,17 @@ class LifeSimulation:
             neighbors = self.get_neighbors(pos)
             # Add these neighbors to the all_neighbors set
             all_neighbors.update(neighbors)
-
             # Check if neighbors are alive
-            # loop through neighbors; passed in as x; is x in positions? if so, keep it; if not, remove it
-            # filter() gives us an iterator; need to convert it back to a list
-            neighbors = list(filter(lambda x: x in self.positions, neighbors))
-
-            if len(neighbors) in [2, 3]:
-                # Does this position have 2 or 3 neighbors? If so, it stays alive.
+            neighbors = [n for n in neighbors if n in self.positions]
+            # Does this position have 2 or 3 neighbors? If so, it stays alive.
+            if len(neighbors) in (2, 3):
                 new_positions.add(pos)
 
         # Loop through all neighbors of live cells
         for pos in all_neighbors:
             # Get neighbors of this position
             neighbors = self.get_neighbors(pos)
-            neighbors = list(filter(lambda x: x in self.positions, neighbors))
+            neighbors = [n for n in neighbors if n in self.positions]
             # If a dead cell has exactly 3 live neighbors, it becomes alive.
             if len(neighbors) == 3:
                 new_positions.add(pos)
@@ -59,13 +61,15 @@ class LifeSimulation:
         x, y = position
         neighbors = []
 
-
+        # Loop through all possible neighbor offsets
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
                 if dx == dy == 0:
                     continue  # This is the cell itself, not a neighbor; ignore
 
+                # Calculate neighbor position
                 nx, ny = x + dx, y + dy
+                # Ensure neighbor is within grid bounds before adding
                 if 0 <= nx < self.width and 0 <= ny < self.height:
                     neighbors.append((nx, ny))
 
