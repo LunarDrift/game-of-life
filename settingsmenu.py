@@ -57,7 +57,12 @@ class SettingsMenu:
         # Zoom in/out with the mouse wheel
         if event.type != pygame.MOUSEWHEEL:
             return
-            
+        
+        # Only zoom if menu is closed or mouse is on zoom slider
+        mouse_pos = pygame.mouse.get_pos()
+        if self.open and not self.tile_size_slider.rect.collidepoint(mouse_pos):
+            return
+        
         # Scroll up = zoom in
         if event.y > 0:
             self.tile_size = min(self.tile_size + 1, self.max_tile_size)
