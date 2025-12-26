@@ -70,3 +70,8 @@ class LifeSimulation:
                     neighbors.append((nx, ny))
 
         return neighbors
+    
+
+    def update_grid_size(self, width, height, tile_size):
+        self.width = width // tile_size
+        self.height = height // tile_size

@@ -1,85 +1,48 @@
 import random
 import pygame
-import pygame_widgets
-from pygame_widgets.dropdown import Dropdown
 from simulation import LifeSimulation
 from view import LifeView
 from settingsmenu import SettingsMenu
+from constants import (
+    WIDTH, HEIGHT, TILE_SIZE, GRID_WIDTH, GRID_HEIGHT, FPS,
+    BLACK, GRAY, YELLOW
+)
 
 
 pygame.init()
 
-
-BLACK = (0, 0, 0)
-GRAY = (128, 128, 128)
-YELLOW = (200, 200, 0)
-
-WIDTH, HEIGHT= 800, 800
-TILE_SIZE = 10
-GRID_WIDTH = WIDTH // TILE_SIZE
-GRID_HEIGHT = HEIGHT // TILE_SIZE
-FPS = 120
-
-MIN_POSITIONS = 5
-MAX_POSITIONS = 20
-
-
-
 class LifeGame:
     def __init__(self):
-        
-
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Conway's Game of Life")
         self.clock = pygame.time.Clock()
 
-        self.simulation = LifeSimulation(GRID_WIDTH, GRID_HEIGHT)
-        self.view = LifeView(self.screen, TILE_SIZE)
         self.settings = SettingsMenu()
+        self.simulation = LifeSimulation(
+            WIDTH // self.settings.tile_size,
+            HEIGHT // self.settings.tile_size
+        )
+        self.view = LifeView(self.screen, self.settings.tile_size)
 
     def main(self):
-        self.running = True
+        running = True
         self.playing = False
         self.count = 0
-        self.update_freq = 30
-        self.show_grid = False
 
 
-        while self.running:
+        while running:
             self.clock.tick(FPS)
 
-            # ---------------------------------------------------- EVENTS ----------------------------------------------------
+# ---------------------------------------------------- EVENTS ----------------------------------------------------
 
             events = pygame.event.get()
             for event in events:
+                # Let settings menu handle its own clicks
                 self.settings.handle_event(event)
-
                 if event.type == pygame.QUIT:
-                    self.running = False
+                    running = False
 
-            # -------------------------------- Mouse Events --------------------------------
-                if not self.settings.open:
-                    if pygame.mouse.get_pressed()[0]:
-                        # Click and drag to draw new cells
-                        x, y = pygame.mouse.get_pos()
-                        col = x // TILE_SIZE
-                        row = y // TILE_SIZE
-                        pos = (col, row)
-
-                        if 0 <= col <= GRID_WIDTH and 0 <= row <= GRID_HEIGHT:
-                            self.simulation.positions.add(pos)
-
-                    if pygame.mouse.get_pressed()[2]:
-                        # Right click to remove a cell
-                        x, y = pygame.mouse.get_pos()
-                        col = x // TILE_SIZE
-                        row = y // TILE_SIZE
-                        pos = (col, row)
-
-                        if pos in self.simulation.positions:
-                            # Remove position if it already exists
-                            self.simulation.positions.remove(pos)
-            # -------------------------------- Keyboard Events --------------------------------
+            # -------------------------------- Keyboard Input --------------------------------
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         # Pause or unpause the game
@@ -91,37 +54,78 @@ class LifeGame:
                         self.count = 0
                     elif event.key == pygame.K_r:
                         # Generate random positions for cells
-                        self.simulation.positions = self.simulation.gen(random.randrange(MIN_POSITIONS, MAX_POSITIONS) * GRID_WIDTH)
+                        num_cells = random.randrange(
+                            self.settings.min_cells,
+                            self.settings.max_cells
+                        ) * self.simulation.width
+                        self.simulation.positions = self.simulation.gen(num_cells)
                     elif event.key == pygame.K_g:
                         # Toggle grid lines
-                        self.show_grid = not self.show_grid
+                        self.settings.show_grid = not self.settings.show_grid
                     
                     
                     elif event.key == pygame.K_ESCAPE:
-                        self.running = False
+                        running = False
                 
 
-            # ---------------------------------------------------- UPDATE ----------------------------------------------------
-            pygame.display.set_caption("Playing" if self.playing else "Paused")
+# ---------------------------------------------------- UPDATE ----------------------------------------------------
             
+            # Compute grid size from current tile size
+            grid_width = WIDTH // self.settings.tile_size
+            grid_height = HEIGHT // self.settings.tile_size
+
+            # Update simulation grid size based on current tile size
+            self.simulation.update_grid_size(WIDTH, HEIGHT, self.settings.tile_size)
+            # Keep track of previous tile size and update view if it has changed
+            if self.view.tile_size != self.settings.tile_size:
+                self.view.tile_size = self.settings.tile_size
+
+
+            # Mouse Drawing
+            if not self.settings.open:
+                mouse_pressed = pygame.mouse.get_pressed()
+                # Click and drag to draw new cells
+                x, y = pygame.mouse.get_pos()
+                col = x // self.settings.tile_size
+                row = y // self.settings.tile_size
+                pos = (col, row)
+
+                if mouse_pressed[0]:
+                    # Left click to add a cell
+                    if 0 <= col < self.simulation.width \
+                    and 0 <= row < self.simulation.height:
+                        self.simulation.positions.add(pos)
+
+                elif mouse_pressed[2]:
+                    # Right click to remove a cell
+                    if pos in self.simulation.positions:
+                        # Remove position if it already exists
+                        self.simulation.positions.remove(pos)
+            
+
+
+            # Step the simulation based on update frequency
             if self.playing:
                 self.count += 1
-                if self.count >= self.update_freq:
+                if self.count >= self.settings.update_freq:
                     self.count = 0
-                    self.simulation.step()
-
-            self.update_freq = self.settings.update_freq
-            self.show_grid = self.settings.show_grid
-            
+                    self.simulation.step()            
 
 
-            # ---------------------------------------------------- DRAW ------------------------------------------------------
+# ---------------------------------------------------- DRAW ------------------------------------------------------
 
             self.screen.fill(GRAY)
             self.view.draw_cells(self.simulation.positions, YELLOW)
-            self.view.draw_grid(GRID_WIDTH, GRID_HEIGHT, BLACK, self.show_grid)
+            self.view.draw_grid(
+                grid_width,
+                grid_height,
+                BLACK,
+                self.settings.show_grid
+            )
             self.settings.draw(self.screen)
 
+
+            pygame.display.set_caption("Playing" if self.playing else "Paused")
             pygame.display.flip()
 
 
