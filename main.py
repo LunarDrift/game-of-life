@@ -4,6 +4,7 @@ from simulation import LifeSimulation
 from view import LifeView
 from settingsmenu import SettingsMenu
 from constants import WIDTH, HEIGHT, FPS, BLACK, GRAY, YELLOW
+from slider import SimpleSlider
 
 pygame.init()
 
@@ -19,6 +20,8 @@ class LifeGame:
             HEIGHT // self.settings.tile_size
         )
         self.view = LifeView(self.screen, self.settings.tile_size)
+
+        self.slider = SimpleSlider(50, 50, 200, 20, 0, 100)
 
         # Keep track of previous settings to detect changes
         self.prev_tile_size = self.settings.tile_size
@@ -143,6 +146,9 @@ class LifeGame:
                 self.settings.show_grid
             )
             self.settings.draw(self.screen)
+
+            self.slider.handle_event(event)
+            self.slider.draw(self.screen)
 
 
             pygame.display.set_caption("Playing" if self.playing else "Paused")
