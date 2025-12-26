@@ -3,7 +3,7 @@ from slider import SimpleSlider
 
 class SettingsMenu:
     def __init__(self):
-        self.open = False
+        self.open = True
         self.clicked = False
 
         # User-adjustable settings
@@ -11,7 +11,7 @@ class SettingsMenu:
         self.min_tile_size = 2
         self.max_tile_size = 20
         self.initial_cells = 50
-        self.update_freq = 30
+        self.sim_speed = 30
         self.min_update_freq = 1
         self.max_update_freq = 100
         self.show_grid = False
@@ -90,8 +90,8 @@ class SettingsMenu:
 
         # Read slider values AFTER handling events
         slider = self.speed_slider
-        # Invert speed slider value to be more intuitive
-        self.update_freq = round(slider.max_val - (slider.val - slider.min_val))
+        # Invert speed slider values to be more intuitive
+        self.sim_speed = round(slider.max_val - (slider.val - slider.min_val))
         self.tile_size = round(self.tile_size_slider.val)
         self.initial_cells = round(self.initial_population_slider.val)
 
