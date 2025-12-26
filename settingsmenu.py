@@ -24,7 +24,7 @@ class SettingsMenu:
         # Sliders for settings
         self.speed_slider = SimpleSlider(
             14,
-            40,
+            58,
             170,
             15,
             self.min_update_freq,
@@ -32,14 +32,14 @@ class SettingsMenu:
         )
         self.tile_size_slider = SimpleSlider(
             14,
-            60,
+            93,
             170,
             15,
             self.min_tile_size,
             self.max_tile_size
         )
 
-        self.font = pygame.font.SysFont(None, 24)
+        self.font = pygame.font.SysFont(None, 20)
 
 
     def _draw_button(self, screen, rect, label):
@@ -102,10 +102,10 @@ class SettingsMenu:
         button_surf.fill((0, 0, 0, 180))  # Semi-transparent black
         screen.blit(button_surf, self.button_rect.topleft)
 
-        txt = self.font.render("Settings", True, (255, 255, 0))
+        button_txt = self.font.render("Settings", True, (255, 255, 0))
         screen.blit(
-            txt,
-            txt.get_rect(center=self.button_rect.center)
+            button_txt,
+            button_txt.get_rect(center=self.button_rect.center)
         )
 
         # if the menu is closed, no need to draw the panel
@@ -128,6 +128,31 @@ class SettingsMenu:
             2,
             border_radius=8
         )
+
+        # Draw slider labels and values
+        speed_label_surface = self.font.render(
+            f"Update Frequency: {round(self.speed_slider.val)}",
+            True,
+            (255, 255, 255)
+        )
+
+        tile_size_label_surface = self.font.render(
+            f"Zoom Level: {round(self.tile_size_slider.val)}",
+            True,
+            (255, 255, 255)
+        )
+
+
+        # Get label rects and center its x position within the panel, place it above the slider
+        speed_label_rect = speed_label_surface.get_rect(centerx=self.panel_rect.centerx)
+        speed_label_rect.bottom = self.speed_slider.rect.top - 2
+        screen.blit(speed_label_surface, speed_label_rect)
+
+        tile_size_label_rect = tile_size_label_surface.get_rect(centerx=self.panel_rect.centerx)
+        tile_size_label_rect.bottom = self.tile_size_slider.rect.top - 2
+        screen.blit(tile_size_label_surface, tile_size_label_rect)
+
+
 
         # Draw sliders
         self.speed_slider.draw(screen)
