@@ -12,7 +12,7 @@ class ControlsMenu:
         self.panel_rect = pygame.Rect(90, 26, 255, 175)
 
         # Font for button labels
-        self.font = pygame.font.SysFont("ubuntumono", 12)
+        self.font = pygame.font.SysFont("ubuntumono", 13)
 
 
     def _draw_button(self, screen, rect, label):

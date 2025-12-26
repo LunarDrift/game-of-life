@@ -50,7 +50,7 @@ class SettingsMenu:
 
 
 
-        self.font = pygame.font.SysFont("ubuntumono", 12)
+        self.font = pygame.font.SysFont("ubuntumono", 13)
 
 
     def handle_event(self, event):
