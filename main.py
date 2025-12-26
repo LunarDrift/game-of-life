@@ -24,8 +24,6 @@ class LifeGame:
         self.prev_tile_size = self.settings.tile_size
         self.prev_show_grid = self.settings.show_grid
         self.prev_update_freq = self.settings.update_freq
-        self.prev_min_cells = self.settings.min_cells
-        self.prev_max_cells = self.settings.max_cells
 
 
     def update_simulation_settings(self):
@@ -42,12 +40,6 @@ class LifeGame:
         if self.prev_update_freq != self.settings.update_freq:
             # If we use update_freq elsewhere, we can update it here
             self.prev_update_freq = self.settings.update_freq
-
-        if (self.prev_min_cells != self.settings.min_cells or
-            self.prev_max_cells != self.settings.max_cells):
-            # If something depends on min/max cells, update it here
-            self.prev_min_cells = self.settings.min_cells
-            self.prev_max_cells = self.settings.max_cells
 
 
     def main(self):
@@ -77,18 +69,25 @@ class LifeGame:
                     if event.key == pygame.K_SPACE:
                         # Pause or unpause the game
                         self.playing = not self.playing
+
                     elif event.key == pygame.K_c:
-                        # Clear the grid
+                        # Clear the grid and pause the simulation
                         self.simulation.positions.clear()
                         self.playing = False
                         self.count = 0
+
                     elif event.key == pygame.K_r:
-                        # Generate random positions for cells
-                        num_cells = int(
-                            (self.settings.initial_population_slider.val / 100)
-                            * grid_width * grid_height
-                        )
-                        self.simulation.positions = self.simulation.gen(num_cells)
+                        # Probability-based generation for cells
+                        prob_alive = self.settings.initial_population_slider.val / 100
+                        positions = set()
+                        
+                        for col in range(grid_width):
+                            for row in range(grid_height):
+                                if random.random() < prob_alive:
+                                    positions.add((col, row))
+
+                        self.simulation.positions = positions
+
                     elif event.key == pygame.K_g:
                         # Toggle grid lines
                         self.settings.show_grid = not self.settings.show_grid
