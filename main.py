@@ -45,23 +45,6 @@ class LifeGame:
         self.show_grid = False
 
 
-        # -------------- UI WIDGETS --------------
-        speed_dropdown = Dropdown(
-            self.screen,
-            10, 10, 140, 40,
-            name='Update Speed',
-            choices=[
-                'Slow (60)',
-                'Normal (30)',
-                'Fast (10)',
-                'Very Fast (1)'
-            ],
-            values=[60, 30, 10, 1],
-            direction='down',
-            textHAlign='left'
-        )
-
-
         while self.running:
             self.clock.tick(FPS)
 
@@ -69,31 +52,34 @@ class LifeGame:
 
             events = pygame.event.get()
             for event in events:
+                self.settings.handle_event(event)
+
                 if event.type == pygame.QUIT:
                     self.running = False
 
-            # -------------------------------------------- Mouse Events --------------------------------------------
-                if pygame.mouse.get_pressed()[0]:
-                    # Click and drag to draw new cells
-                    x, y = pygame.mouse.get_pos()
-                    col = x // TILE_SIZE
-                    row = y // TILE_SIZE
-                    pos = (col, row)
+            # -------------------------------- Mouse Events --------------------------------
+                if not self.settings.open:
+                    if pygame.mouse.get_pressed()[0]:
+                        # Click and drag to draw new cells
+                        x, y = pygame.mouse.get_pos()
+                        col = x // TILE_SIZE
+                        row = y // TILE_SIZE
+                        pos = (col, row)
 
-                    if 0 <= col <= GRID_WIDTH and 0 <= row <= GRID_HEIGHT:
-                        self.simulation.positions.add(pos)
+                        if 0 <= col <= GRID_WIDTH and 0 <= row <= GRID_HEIGHT:
+                            self.simulation.positions.add(pos)
 
-                if pygame.mouse.get_pressed()[2]:
-                    # Right click to remove a cell
-                    x, y = pygame.mouse.get_pos()
-                    col = x // TILE_SIZE
-                    row = y // TILE_SIZE
-                    pos = (col, row)
+                    if pygame.mouse.get_pressed()[2]:
+                        # Right click to remove a cell
+                        x, y = pygame.mouse.get_pos()
+                        col = x // TILE_SIZE
+                        row = y // TILE_SIZE
+                        pos = (col, row)
 
-                    if pos in self.simulation.positions:
-                        # Remove position if it already exists
-                        self.simulation.positions.remove(pos)
-            # -------------------------------------------- Keyboard Events --------------------------------------------
+                        if pos in self.simulation.positions:
+                            # Remove position if it already exists
+                            self.simulation.positions.remove(pos)
+            # -------------------------------- Keyboard Events --------------------------------
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         # Pause or unpause the game
@@ -114,22 +100,19 @@ class LifeGame:
                     elif event.key == pygame.K_ESCAPE:
                         self.running = False
                 
-                
-
 
             # ---------------------------------------------------- UPDATE ----------------------------------------------------
+            pygame.display.set_caption("Playing" if self.playing else "Paused")
+            
             if self.playing:
                 self.count += 1
                 if self.count >= self.update_freq:
                     self.count = 0
                     self.simulation.step()
 
-
-            pygame.display.set_caption("Playing" if self.playing else "Paused")
-
-            selected_speed = speed_dropdown.getSelected()
-            if selected_speed is not None:
-                self.update_freq = selected_speed
+            self.update_freq = self.settings.update_freq
+            self.show_grid = self.settings.show_grid
+            
 
 
             # ---------------------------------------------------- DRAW ------------------------------------------------------
@@ -137,8 +120,8 @@ class LifeGame:
             self.screen.fill(GRAY)
             self.view.draw_cells(self.simulation.positions, YELLOW)
             self.view.draw_grid(GRID_WIDTH, GRID_HEIGHT, BLACK, self.show_grid)
+            self.settings.draw(self.screen)
 
-            pygame_widgets.update(events)
             pygame.display.flip()
 
 
