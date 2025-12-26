@@ -17,8 +17,8 @@ class SettingsMenu:
         self.show_grid = False
 
         # Settings button and panel rectangles
-        self.button_rect = pygame.Rect(10, 10, 80, 20)
-        self.panel_rect = pygame.Rect(10, 32, 180, 200)
+        self.button_rect = pygame.Rect(5, 5, 80, 20)
+        self.panel_rect = pygame.Rect(5, 26, 180, 200)
 
         # Sliders for settings
         self.speed_slider = SimpleSlider(
@@ -50,25 +50,7 @@ class SettingsMenu:
 
 
 
-        self.font = pygame.font.SysFont(None, 20)
-
-
-    def _draw_button(self, screen, rect, label):
-        # DEPRECATED: Using sliders instead of buttons for now
-
-        # Draw semi-transparent button
-        button_surf = pygame.Surface(
-            (rect.width, rect.height),
-            pygame.SRCALPHA
-        )
-        button_surf.fill((120, 120, 120, 100))  # Semi-transparent gray
-        screen.blit(button_surf, rect.topleft)
-
-        txt = self.font.render(label, True, (0, 0, 0))
-        screen.blit(
-            txt,
-            txt.get_rect(center=rect.center)
-        )
+        self.font = pygame.font.SysFont("ubuntumono", 12)
 
 
     def handle_event(self, event):
@@ -104,7 +86,7 @@ class SettingsMenu:
                 self.open = False
         
         # Release clicked state
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+        elif event.type == pygame.MOUSEBUTTONUP:
             self.clicked = False
 
 

@@ -3,6 +3,7 @@ import pygame
 from simulation import LifeSimulation
 from view import LifeView
 from settingsmenu import SettingsMenu
+from controlsmenu import ControlsMenu
 from constants import WIDTH, HEIGHT, FPS, BLACK, GRAY, YELLOW
 
 pygame.init()
@@ -20,6 +21,7 @@ class LifeGame:
             HEIGHT // self.settings.tile_size
         )
         self.view = LifeView(self.screen, self.settings.tile_size)
+        self.controls = ControlsMenu()
 
         # Keep track of previous settings to detect changes
         self.prev_tile_size = self.settings.tile_size
@@ -51,6 +53,7 @@ class LifeGame:
                 return False
 
             self.settings.handle_event(event)
+            self.controls.handle_event(event)
             self.handle_keyboard(event)
         
         return True
@@ -159,6 +162,7 @@ class LifeGame:
         )
 
         self.settings.draw(self.screen)
+        self.controls.draw(self.screen)
 
         pygame.display.set_caption("Playing" if self.playing else "Paused")
         pygame.display.flip()
