@@ -1,5 +1,4 @@
 import pygame
-from constants import WIDTH, HEIGHT, BLACK, YELLOW
 
 
 class ControlsMenu:
@@ -9,7 +8,7 @@ class ControlsMenu:
 
         # Controls button and panel rectangles
         self.button_rect = pygame.Rect(90, 5, 80, 20)
-        self.panel_rect = pygame.Rect(90, 26, 255, 175)
+        self.panel_rect = pygame.Rect(90, 26, 260, 175)
 
         # Font for button labels
         self.font = pygame.font.SysFont("ubuntumono", 13)
@@ -61,7 +60,7 @@ class ControlsMenu:
         button_surf.fill((0, 0, 0, 180))  # Semi-transparent black
         screen.blit(button_surf, self.button_rect.topleft)
 
-        button_txt = self.font.render("Controls", True, (255, 255, 0))
+        button_txt = self.font.render("Controls", True, (235, 235, 0))
         screen.blit(
             button_txt,
             button_txt.get_rect(center=self.button_rect.center)
@@ -91,13 +90,13 @@ class ControlsMenu:
         # Draw control instructions
         instructions = [
             "Controls:",
-            "- Left Click:  Create New Cell",
-            "- Right Click: Delete Cell",
-            "- Mouse Wheel: Zoom In/Out",
-            "- Spacebar: Start/Pause Simulation",
-            "- R: Generate New Random Seed",
-            "- C: Clear All Cells",
-            "- G: Toggle Grid On/Off",
+            "• Left Click:  Create New Cell",
+            "• Right Click: Delete Cell",
+            "• Mouse Wheel: Zoom In/Out",
+            "• Spacebar: Start/Pause Simulation",
+            "• R: Generate Random Seed",
+            "• C: Clear All Cells",
+            "• G: Toggle Grid On/Off",
         ]
 
         for i, line in enumerate(instructions):

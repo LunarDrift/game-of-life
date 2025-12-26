@@ -25,7 +25,7 @@ class SettingsMenu:
             15,
             58,
             160,
-            15,
+            13,
             self.min_update_freq,
             self.max_update_freq
         )
@@ -34,7 +34,7 @@ class SettingsMenu:
             15,
             93,
             160,
-            15,
+            13,
             self.min_zoom,
             self.max_zoom
         )
@@ -43,7 +43,7 @@ class SettingsMenu:
             15,
             128,
             160,
-            15,
+            13,
             0,
             100
         )
@@ -99,7 +99,7 @@ class SettingsMenu:
         button_surf.fill((0, 0, 0, 180))  # Semi-transparent black
         screen.blit(button_surf, self.button_rect.topleft)
 
-        button_txt = self.font.render("Settings", True, (255, 255, 0))
+        button_txt = self.font.render("Settings", True, (235, 235, 0))
         screen.blit(
             button_txt,
             button_txt.get_rect(center=self.button_rect.center)
