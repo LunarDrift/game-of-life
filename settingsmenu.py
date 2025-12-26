@@ -1,4 +1,5 @@
 import pygame
+from slider import SimpleSlider
 
 class SettingsMenu:
     def __init__(self):
@@ -7,32 +8,43 @@ class SettingsMenu:
 
         # User-adjustable settings
         self.tile_size = 10
+        self.min_tile_size = 2
+        self.max_tile_size = 20
         self.min_cells = 5
         self.max_cells = 20
         self.update_freq = 30
+        self.min_update_freq = 5
+        self.max_update_freq = 60
         self.show_grid = False
 
-
-        # Layout
+        # Settings button and panel rectangles
         self.button_rect = pygame.Rect(10, 10, 80, 20)
         self.panel_rect = pygame.Rect(10, 35, 180, 200)
 
-        # Speed buttons
-        self.speed_slow = pygame.Rect(14, 40, 173, 20)
-        self.speed_normal = pygame.Rect(14, 60, 173, 20)
-        self.speed_fast = pygame.Rect(14, 80, 173, 20)
-        self.speed_very_fast = pygame.Rect(14, 100, 173, 20)
-
-        # Grid size buttons
-        self.grid_tiny = pygame.Rect(14, 130, 173, 20)
-        self.grid_small = pygame.Rect(14, 150, 173, 20)
-        self.grid_normal = pygame.Rect(14, 170, 173, 20)
-        self.grid_large = pygame.Rect(14, 190, 173, 20)
+        # Sliders for settings
+        self.speed_slider = SimpleSlider(
+            14,
+            40,
+            170,
+            15,
+            self.min_update_freq,
+            self.max_update_freq
+        )
+        self.tile_size_slider = SimpleSlider(
+            14,
+            60,
+            170,
+            15,
+            self.min_tile_size,
+            self.max_tile_size
+        )
 
         self.font = pygame.font.SysFont(None, 24)
 
 
     def _draw_button(self, screen, rect, label):
+        # DEPRECATED: Using sliders instead of buttons for now
+
         # Draw semi-transparent button
         button_surf = pygame.Surface(
             (rect.width, rect.height),
@@ -54,36 +66,29 @@ class SettingsMenu:
             if self.button_rect.collidepoint(event.pos):
                 self.open = not self.open
                 self.clicked = True
-
-            # Handle clicks inside the settings panel
-        if self.open and event.type == pygame.MOUSEBUTTONDOWN:
-            # Speed buttons
-            if self.speed_slow.collidepoint(event.pos):
-                self.update_freq = 60
-            elif self.speed_normal.collidepoint(event.pos):
-                self.update_freq = 30
-            elif self.speed_fast.collidepoint(event.pos):
-                self.update_freq = 10
-            elif self.speed_very_fast.collidepoint(event.pos):
-                self.update_freq = 5
+                return
             
-            # Grid size buttons
-            elif self.grid_tiny.collidepoint(event.pos):
-                self.tile_size = 2
-            elif self.grid_small.collidepoint(event.pos):
-                self.tile_size = 5
-            elif self.grid_normal.collidepoint(event.pos):
-                self.tile_size = 10
-            elif self.grid_large.collidepoint(event.pos):
-                self.tile_size = 20
-
-            
-            # If menu is open, and we click outside the panel, close it
-            elif (not self.panel_rect.collidepoint(event.pos)
-                  and not self.button_rect.collidepoint(event.pos)):
-                self.open = False
-
+        # If menu is not open, ignore other events
+        if not self.open:
+            return
         
+        # Always forward events to sliders when menu is open
+        self.speed_slider.handle_event(event)
+        self.tile_size_slider.handle_event(event)
+
+        # Read slider values AFTER handling events
+        self.update_freq = round(self.speed_slider.val)
+        self.tile_size = round(self.tile_size_slider.val)
+
+        # Close menu if clicking outside panel
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if (
+                not self.panel_rect.collidepoint(event.pos)
+                and not self.button_rect.collidepoint(event.pos)
+            ):
+                self.open = False
+        
+        # Release clicked state
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.clicked = False
 
@@ -124,14 +129,6 @@ class SettingsMenu:
             border_radius=8
         )
 
-        # Draw speed buttons
-        self._draw_button(screen, self.speed_slow, "Speed: Slow")
-        self._draw_button(screen, self.speed_normal, "Speed: Normal")
-        self._draw_button(screen, self.speed_fast, "Speed: Fast")
-        self._draw_button(screen, self.speed_very_fast, "Speed: Very Fast")
-
-        # Draw grid size buttons
-        self._draw_button(screen, self.grid_tiny, "Grid Size: Tiny")
-        self._draw_button(screen, self.grid_small, "Grid Size: Small")
-        self._draw_button(screen, self.grid_normal, "Grid Size: Normal")
-        self._draw_button(screen, self.grid_large, "Grid Size: Large")
+        # Draw sliders
+        self.speed_slider.draw(screen)
+        self.tile_size_slider.draw(screen)
