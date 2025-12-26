@@ -39,7 +39,7 @@ class SettingsMenu:
                 self.clicked = True
 
             # Handle clicks inside the settings panel
-        if self.open and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if self.open and event.type == pygame.MOUSEBUTTONDOWN:
             # Speed buttons
             if self.speed_slow.collidepoint(event.pos):
                 self.update_freq = 60
@@ -48,7 +48,7 @@ class SettingsMenu:
             elif self.speed_fast.collidepoint(event.pos):
                 self.update_freq = 10
             elif self.speed_very_fast.collidepoint(event.pos):
-                self.update_freq = 1
+                self.update_freq = 5
             
             # Grid size buttons
             elif self.grid_small.collidepoint(event.pos):
@@ -57,6 +57,12 @@ class SettingsMenu:
                 self.tile_size = 10
             elif self.grid_large.collidepoint(event.pos):
                 self.tile_size = 20
+
+            
+            # If menu is open, and we click outside the panel, close it
+            elif (not self.panel_rect.collidepoint(event.pos)
+                  and not self.button_rect.collidepoint(event.pos)):
+                self.open = False
 
         
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:

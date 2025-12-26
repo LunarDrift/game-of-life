@@ -3,11 +3,7 @@ import pygame
 from simulation import LifeSimulation
 from view import LifeView
 from settingsmenu import SettingsMenu
-from constants import (
-    WIDTH, HEIGHT, TILE_SIZE, GRID_WIDTH, GRID_HEIGHT, FPS,
-    BLACK, GRAY, YELLOW
-)
-
+from constants import WIDTH, HEIGHT, FPS, BLACK, GRAY, YELLOW
 
 pygame.init()
 
@@ -28,7 +24,6 @@ class LifeGame:
         running = True
         self.playing = False
         self.count = 0
-
 
         while running:
             self.clock.tick(FPS)
@@ -63,10 +58,8 @@ class LifeGame:
                         # Toggle grid lines
                         self.settings.show_grid = not self.settings.show_grid
                     
-                    
                     elif event.key == pygame.K_ESCAPE:
                         running = False
-                
 
 # ---------------------------------------------------- UPDATE ----------------------------------------------------
             
@@ -79,7 +72,6 @@ class LifeGame:
             # Keep track of previous tile size and update view if it has changed
             if self.view.tile_size != self.settings.tile_size:
                 self.view.tile_size = self.settings.tile_size
-
 
             # Mouse Drawing
             if not self.settings.open:
@@ -101,8 +93,6 @@ class LifeGame:
                     if pos in self.simulation.positions:
                         # Remove position if it already exists
                         self.simulation.positions.remove(pos)
-            
-
 
             # Step the simulation based on update frequency
             if self.playing:
