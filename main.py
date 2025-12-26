@@ -90,7 +90,7 @@ class LifeGame:
     # -------------------- Mouse Drawing --------------------
     def handle_mouse(self):
         # Mouse Drawing
-        if self.settings.open:
+        if not self.can_draw():
             return
         
         mouse_pressed = pygame.mouse.get_pressed()
@@ -111,6 +111,17 @@ class LifeGame:
             if pos in self.simulation.positions:
                 # Remove position if it already exists
                 self.simulation.positions.remove(pos)
+
+
+    def can_draw(self):
+        if self.settings.open or self.controls.open:
+            return False
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        if self.settings.button_rect.collidepoint((mouse_x, mouse_y)):
+            return False
+        elif self.controls.button_rect.collidepoint((mouse_x, mouse_y)):
+            return False
+        return True
 
 
     # -------------------- Simulation Update --------------------

@@ -15,6 +15,16 @@ class SimpleSlider:
             h
         )
 
+    def set_val(self, val):
+        self.val = max(self.min_val, min(val, self.max_val))
+
+        # Convert value - percentage
+        percent = (self.val - self.min_val) / (self.max_val - self.min_val)
+        # Update handle position
+        self.handle_rect.centerx = (
+            self.rect.left + percent * self.rect.width
+        )
+
     
     def _update_value_from_mouse(self, mouse_x):
         # Calculate relative position of mouse to slider

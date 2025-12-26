@@ -22,27 +22,27 @@ class SettingsMenu:
 
         # Sliders for settings
         self.speed_slider = SimpleSlider(
-            14,
+            15,
             58,
-            170,
+            160,
             15,
             self.min_update_freq,
             self.max_update_freq
         )
 
         self.tile_size_slider = SimpleSlider(
-            14,
+            15,
             93,
-            170,
+            160,
             15,
             self.min_tile_size,
             self.max_tile_size
         )
 
         self.initial_population_slider = SimpleSlider(
-            14,
+            15,
             128,
-            170,
+            160,
             15,
             0,
             100
@@ -51,6 +51,23 @@ class SettingsMenu:
 
 
         self.font = pygame.font.SysFont("ubuntumono", 13)
+
+    
+    def mouse_zoom(self, event):
+        # Zoom in/out with the mouse wheel
+        if event.type != pygame.MOUSEWHEEL:
+            return
+            
+        # Scroll up = zoom in
+        if event.y > 0:
+            self.tile_size = min(self.tile_size + 1, self.max_tile_size)
+        
+        # Scroll down = zoom out
+        elif event.y < 0:
+            self.tile_size = max(self.tile_size - 1, self.min_tile_size)
+
+        # Keep slider in sync
+        self.tile_size_slider.set_val(self.tile_size)
 
 
     def handle_event(self, event):
@@ -61,10 +78,12 @@ class SettingsMenu:
                 self.clicked = True
                 return
             
+        self.mouse_zoom(event)
+
         # If menu is not open, ignore other events
         if not self.open:
             return
-        
+
         # Always forward events to sliders when menu is open
         self.speed_slider.handle_event(event)
         self.tile_size_slider.handle_event(event)
@@ -78,7 +97,7 @@ class SettingsMenu:
         self.initial_cells = round(self.initial_population_slider.val)
 
         # Close menu if clicking outside panel
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if (
                 not self.panel_rect.collidepoint(event.pos)
                 and not self.button_rect.collidepoint(event.pos)
