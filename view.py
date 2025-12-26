@@ -2,9 +2,9 @@ import pygame
 
 
 class LifeView:
-    def __init__(self, screen, tile_size):
+    def __init__(self, screen, zoom):
         self.screen = screen
-        self.tile_size = tile_size
+        self.zoom = zoom
 
 
     def draw_cells(self, positions, color):
@@ -13,10 +13,10 @@ class LifeView:
             pygame.draw.rect(
                 self.screen,
                 color,
-                (col * self.tile_size,
-                 row * self.tile_size,
-                 self.tile_size,
-                 self.tile_size)
+                (col * self.zoom,
+                 row * self.zoom,
+                 self.zoom,
+                 self.zoom)
             )
 
 
@@ -27,13 +27,13 @@ class LifeView:
                 pygame.draw.line(
                     self.screen,
                     color,
-                    (x * self.tile_size, 0),
-                    (x * self.tile_size, height * self.tile_size)
+                    (x * self.zoom, 0),
+                    (x * self.zoom, height * self.zoom)
                 )
             for y in range(height):
                 pygame.draw.line(
                     self.screen,
                     color,
-                    (0, y * self.tile_size),
-                    (width * self.tile_size, y * self.tile_size)
+                    (0, y * self.zoom),
+                    (width * self.zoom, y * self.zoom)
                 )

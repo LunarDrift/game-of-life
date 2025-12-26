@@ -17,14 +17,14 @@ class LifeGame:
 
         self.settings = SettingsMenu()
         self.simulation = LifeSimulation(
-            WIDTH // self.settings.tile_size,
-            HEIGHT // self.settings.tile_size
+            WIDTH // self.settings.zoom,
+            HEIGHT // self.settings.zoom
         )
-        self.view = LifeView(self.screen, self.settings.tile_size)
+        self.view = LifeView(self.screen, self.settings.zoom)
         self.controls = ControlsMenu()
 
         # Keep track of previous settings to detect changes
-        self.prev_tile_size = self.settings.tile_size
+        self.prev_zoom = self.settings.zoom
         self.prev_show_grid = self.settings.show_grid
         self.prev_sim_speed = self.settings.sim_speed
 
@@ -53,6 +53,7 @@ class LifeGame:
                 return False
 
             self.settings.handle_event(event)
+            self.handle_scrollwheel(event)
             self.controls.handle_event(event)
             self.handle_keyboard(event)
         
@@ -75,8 +76,8 @@ class LifeGame:
 
         elif event.key == pygame.K_r:
             self.reset_cells(
-                WIDTH // self.settings.tile_size,
-                HEIGHT // self.settings.tile_size
+                WIDTH // self.settings.zoom,
+                HEIGHT // self.settings.zoom
             )
 
         elif event.key == pygame.K_g:
@@ -96,8 +97,8 @@ class LifeGame:
         mouse_pressed = pygame.mouse.get_pressed()
         # Click and drag to draw new cells
         x, y = pygame.mouse.get_pos()
-        col = x // self.settings.tile_size
-        row = y // self.settings.tile_size
+        col = x // self.settings.zoom
+        row = y // self.settings.zoom
         pos = (col, row)
 
         if mouse_pressed[0]:
@@ -111,6 +112,47 @@ class LifeGame:
             if pos in self.simulation.positions:
                 # Remove position if it already exists
                 self.simulation.positions.remove(pos)
+
+    
+    def handle_scrollwheel(self, event):
+        """Handle scroll wheel events for changing settings values while the menu is open."""
+        if event.type != pygame.MOUSEWHEEL:
+            return
+        
+        mouse_pos = pygame.mouse.get_pos()
+        
+        menu_open = self.settings.open
+        over_panel = self.settings.panel_rect.collidepoint(mouse_pos)
+        over_zoom_slider = (
+            self.settings.zoom_slider.rect.collidepoint(mouse_pos)
+        )
+
+        should_zoom = False
+
+        if not menu_open:
+            should_zoom = True
+        else:
+            if over_zoom_slider:
+                should_zoom = True
+            elif not over_panel:
+                should_zoom = True
+        if not should_zoom:
+            return
+        
+        # Apply zoom changes
+        if event.y > 0:
+            self.settings.zoom = min(
+                self.settings.zoom + 1,
+                self.settings.max_zoom
+            )
+        elif event.y < 0:
+            self.settings.zoom = max(
+                self.settings.zoom - 1,
+                self.settings.min_zoom
+            )
+
+        # Keep slider in sync
+        self.settings.zoom_slider.set_val(self.settings.zoom)
 
 
     def can_draw(self):
@@ -129,7 +171,7 @@ class LifeGame:
         self.simulation.update_grid_size(
             WIDTH,
             HEIGHT,
-            self.settings.tile_size
+            self.settings.zoom
         )
 
         self.update_simulation_settings()
@@ -144,10 +186,10 @@ class LifeGame:
 
     def update_simulation_settings(self):
         # Update dependent settings in simulation if they have changed
-        if self.prev_tile_size != self.settings.tile_size:
-            self.view.tile_size = self.settings.tile_size
-            self.simulation.update_grid_size(WIDTH, HEIGHT, self.settings.tile_size)
-            self.prev_tile_size = self.settings.tile_size
+        if self.prev_zoom != self.settings.zoom:
+            self.view.zoom = self.settings.zoom
+            self.simulation.update_grid_size(WIDTH, HEIGHT, self.settings.zoom)
+            self.prev_zoom = self.settings.zoom
 
         if self.prev_show_grid != self.settings.show_grid:
             # If something depends on show_grid, update it here
@@ -163,8 +205,8 @@ class LifeGame:
         self.screen.fill(GRAY)
         self.view.draw_cells(self.simulation.positions, YELLOW)
 
-        grid_width = WIDTH // self.settings.tile_size
-        grid_height = HEIGHT // self.settings.tile_size
+        grid_width = WIDTH // self.settings.zoom
+        grid_height = HEIGHT // self.settings.zoom
         self.view.draw_grid(
             grid_width,
             grid_height,

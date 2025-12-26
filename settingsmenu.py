@@ -7,9 +7,9 @@ class SettingsMenu:
         self.clicked = False
 
         # User-adjustable settings
-        self.tile_size = 10
-        self.min_tile_size = 2
-        self.max_tile_size = 20
+        self.zoom = 10
+        self.min_zoom = 2
+        self.max_zoom = 20
         self.initial_cells = 50
         self.sim_speed = 30
         self.min_update_freq = 1
@@ -30,13 +30,13 @@ class SettingsMenu:
             self.max_update_freq
         )
 
-        self.tile_size_slider = SimpleSlider(
+        self.zoom_slider = SimpleSlider(
             15,
             93,
             160,
             15,
-            self.min_tile_size,
-            self.max_tile_size
+            self.min_zoom,
+            self.max_zoom
         )
 
         self.initial_population_slider = SimpleSlider(
@@ -52,28 +52,6 @@ class SettingsMenu:
 
         self.font = pygame.font.SysFont("ubuntumono", 13)
 
-    
-    def mouse_zoom(self, event):
-        # Zoom in/out with the mouse wheel
-        if event.type != pygame.MOUSEWHEEL:
-            return
-        
-        # Only zoom if menu is closed or mouse is on zoom slider
-        mouse_pos = pygame.mouse.get_pos()
-        if self.open and not self.tile_size_slider.rect.collidepoint(mouse_pos):
-            return
-        
-        # Scroll up = zoom in
-        if event.y > 0:
-            self.tile_size = min(self.tile_size + 1, self.max_tile_size)
-        
-        # Scroll down = zoom out
-        elif event.y < 0:
-            self.tile_size = max(self.tile_size - 1, self.min_tile_size)
-
-        # Keep slider in sync
-        self.tile_size_slider.set_val(self.tile_size)
-
 
     def handle_event(self, event):
         # Check if the settings button is clicked
@@ -83,22 +61,20 @@ class SettingsMenu:
                 self.clicked = True
                 return
             
-        self.mouse_zoom(event)
-
         # If menu is not open, ignore other events
         if not self.open:
             return
 
         # Always forward events to sliders when menu is open
         self.speed_slider.handle_event(event)
-        self.tile_size_slider.handle_event(event)
+        self.zoom_slider.handle_event(event)
         self.initial_population_slider.handle_event(event)
 
         # Read slider values AFTER handling events
         slider = self.speed_slider
         # Invert speed slider values to be more intuitive
         self.sim_speed = round(slider.max_val - (slider.val - slider.min_val))
-        self.tile_size = round(self.tile_size_slider.val)
+        self.zoom = round(self.zoom_slider.val)
         self.initial_cells = round(self.initial_population_slider.val)
 
         # Close menu if clicking outside panel
@@ -157,8 +133,8 @@ class SettingsMenu:
             (255, 255, 255)
         )
 
-        tile_size_label_surface = self.font.render(
-            f"Zoom Level: {round(self.tile_size_slider.val)}",
+        zoom_label_surface = self.font.render(
+            f"Zoom Level: {round(self.zoom_slider.val)}",
             True,
             (255, 255, 255)
         )
@@ -176,9 +152,9 @@ class SettingsMenu:
         speed_label_rect.bottom = self.speed_slider.rect.top - 2
         screen.blit(speed_label_surface, speed_label_rect)
 
-        tile_size_label_rect = tile_size_label_surface.get_rect(centerx=self.panel_rect.centerx)
-        tile_size_label_rect.bottom = self.tile_size_slider.rect.top - 2
-        screen.blit(tile_size_label_surface, tile_size_label_rect)
+        zoom_label_rect = zoom_label_surface.get_rect(centerx=self.panel_rect.centerx)
+        zoom_label_rect.bottom = self.zoom_slider.rect.top - 2
+        screen.blit(zoom_label_surface, zoom_label_rect)
 
         cell_count_label_rect = cell_count_label_surface.get_rect(centerx=self.panel_rect.centerx)
         cell_count_label_rect.bottom = self.initial_population_slider.rect.top - 2
@@ -187,5 +163,5 @@ class SettingsMenu:
 
         # Draw sliders
         self.speed_slider.draw(screen)
-        self.tile_size_slider.draw(screen)
+        self.zoom_slider.draw(screen)
         self.initial_population_slider.draw(screen)
