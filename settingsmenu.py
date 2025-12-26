@@ -10,8 +10,9 @@ class SettingsMenu:
         self.tile_size = 10
         self.min_tile_size = 2
         self.max_tile_size = 20
+        self.initial_cells = 50
         self.min_cells = 5
-        self.max_cells = 20
+        self.max_cells = 75
         self.update_freq = 30
         self.min_update_freq = 5
         self.max_update_freq = 60
@@ -30,6 +31,7 @@ class SettingsMenu:
             self.min_update_freq,
             self.max_update_freq
         )
+
         self.tile_size_slider = SimpleSlider(
             14,
             93,
@@ -38,6 +40,17 @@ class SettingsMenu:
             self.min_tile_size,
             self.max_tile_size
         )
+
+        self.initial_population_slider = SimpleSlider(
+            14,
+            128,
+            170,
+            15,
+            0,
+            100
+        )
+
+
 
         self.font = pygame.font.SysFont(None, 20)
 
@@ -75,10 +88,14 @@ class SettingsMenu:
         # Always forward events to sliders when menu is open
         self.speed_slider.handle_event(event)
         self.tile_size_slider.handle_event(event)
+        # Adjust max cells based on current tile size
+        # self.initial_population_slider.max_val = self.max_cells
+        self.initial_population_slider.handle_event(event)
 
         # Read slider values AFTER handling events
         self.update_freq = round(self.speed_slider.val)
         self.tile_size = round(self.tile_size_slider.val)
+        self.initial_cells = round(self.initial_population_slider.val)
 
         # Close menu if clicking outside panel
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -142,6 +159,13 @@ class SettingsMenu:
             (255, 255, 255)
         )
 
+        percent = round(self.initial_population_slider.val)
+        cell_count_label_surface = self.font.render(
+            f"Initial Population: {percent}%",
+            True,
+            (255, 255, 255)
+        )
+
 
         # Get label rects and center its x position within the panel, place it above the slider
         speed_label_rect = speed_label_surface.get_rect(centerx=self.panel_rect.centerx)
@@ -152,8 +176,13 @@ class SettingsMenu:
         tile_size_label_rect.bottom = self.tile_size_slider.rect.top - 2
         screen.blit(tile_size_label_surface, tile_size_label_rect)
 
+        cell_count_label_rect = cell_count_label_surface.get_rect(centerx=self.panel_rect.centerx)
+        cell_count_label_rect.bottom = self.initial_population_slider.rect.top - 2
+        screen.blit(cell_count_label_surface, cell_count_label_rect)
+
 
 
         # Draw sliders
         self.speed_slider.draw(screen)
         self.tile_size_slider.draw(screen)
+        self.initial_population_slider.draw(screen)

@@ -4,7 +4,6 @@ from simulation import LifeSimulation
 from view import LifeView
 from settingsmenu import SettingsMenu
 from constants import WIDTH, HEIGHT, FPS, BLACK, GRAY, YELLOW
-from slider import SimpleSlider
 
 pygame.init()
 
@@ -65,6 +64,11 @@ class LifeGame:
             for event in events:
                 # Let settings menu handle its own clicks
                 self.settings.handle_event(event)
+
+                grid_width = WIDTH // self.settings.tile_size
+                grid_height = HEIGHT // self.settings.tile_size
+
+                
                 if event.type == pygame.QUIT:
                     running = False
 
@@ -80,10 +84,10 @@ class LifeGame:
                         self.count = 0
                     elif event.key == pygame.K_r:
                         # Generate random positions for cells
-                        num_cells = random.randrange(
-                            self.settings.min_cells,
-                            self.settings.max_cells
-                        ) * self.simulation.width
+                        num_cells = int(
+                            (self.settings.initial_population_slider.val / 100)
+                            * grid_width * grid_height
+                        )
                         self.simulation.positions = self.simulation.gen(num_cells)
                     elif event.key == pygame.K_g:
                         # Toggle grid lines
