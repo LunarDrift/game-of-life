@@ -13,23 +13,6 @@ class ControlsMenu:
         # Font for button labels
         self.font = pygame.font.SysFont("ubuntumono", 13)
 
-
-    def _draw_button(self, screen, rect, label):
-
-        # Draw semi-transparent button
-        button_surf = pygame.Surface(
-            (rect.width, rect.height),
-            pygame.SRCALPHA
-        )
-        button_surf.fill((120, 120, 120, 100))  # Semi-transparent gray
-        screen.blit(button_surf, rect.topleft)
-
-        txt = self.font.render(label, True, (0, 0, 0))
-        screen.blit(
-            txt,
-            txt.get_rect(center=rect.center)
-        )
-
     
     def handle_event(self, event):
         # Toggle menu open/close on button click
