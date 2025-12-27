@@ -115,32 +115,8 @@ class LifeGame:
                 self.simulation.positions.remove(pos)
 
     
-    def handle_scrollwheel(self, event):
-        """Handle scroll wheel events for changing settings values while the menu is open."""
-        if event.type != pygame.MOUSEWHEEL:
-            return
-        
-        mouse_pos = pygame.mouse.get_pos()
-        
-        menu_open = self.settings.open
-        over_panel = self.settings.panel_rect.collidepoint(mouse_pos)
-        over_zoom_slider = (
-            self.settings.zoom_slider.rect.collidepoint(mouse_pos)
-        )
-
-        should_zoom = False
-
-        if not menu_open:
-            should_zoom = True
-        else:
-            if over_zoom_slider:
-                should_zoom = True
-            elif not over_panel:
-                should_zoom = True
-        if not should_zoom:
-            return
-        
-        # Apply zoom changes
+    def _adjust_zoom(self, event):
+        """Adjust zoom level based on scroll wheel input."""
         if event.y > 0:
             self.settings.zoom = min(
                 self.settings.zoom + 1,
@@ -152,8 +128,73 @@ class LifeGame:
                 self.settings.min_zoom
             )
 
-        # Keep slider in sync
         self.settings.zoom_slider.set_val(self.settings.zoom)
+
+
+    def _adjust_speed(self, event):
+        """Adjust simulation speed based on scroll wheel input."""
+        delta = 1 if event.y > 0 else -1
+
+        new_speed = self.settings.speed_slider.val + delta
+        new_speed = max(
+            self.settings.speed_slider.min_val,
+            min(self.settings.speed_slider.max_val, new_speed)
+        )
+
+        self.settings.speed_slider.set_val(new_speed)
+
+    
+    def _adjust_population(self, event):
+        delta = 1 if event.y > 0 else -1
+
+        new_pop = self.settings.initial_population_slider.val + delta
+        new_pop = max(0, min(100, new_pop))
+
+        self.settings.initial_population_slider.set_val(new_pop)
+
+
+    def handle_scrollwheel(self, event):
+        """Handle scroll wheel events for changing settings values while the menu is open."""
+        if event.type != pygame.MOUSEWHEEL:
+            return
+        
+        mouse_pos = pygame.mouse.get_pos()
+        
+        menu_open = self.settings.open
+        over_panel = self.settings.panel_rect.collidepoint(mouse_pos)
+
+        over_zoom_slider = (
+            self.settings.zoom_slider.rect.collidepoint(mouse_pos)
+        )
+        over_speed_slider = (
+            self.settings.speed_slider.rect.collidepoint(mouse_pos)
+        )
+        over_pop_slider = (
+            self.settings.initial_population_slider.rect.collidepoint(mouse_pos)
+        )
+
+
+        # --- MENU OPEN BEHAVIOR ---
+        if menu_open:
+            if over_zoom_slider:
+                self._adjust_zoom(event)
+                return
+            elif over_speed_slider:
+                self._adjust_speed(event)
+                return
+            elif over_pop_slider:
+                self._adjust_population(event)
+                return
+            elif not over_panel:
+                # Scroll over grid while menu open -> zoom
+                self._adjust_zoom(event)
+                return
+        
+            # Otherwise: over panel but not a slider -> do nothing
+            return
+        
+        # --- MENU CLOSED BEHAVIOR ---
+        self._adjust_zoom(event)
 
 
     def can_draw(self):
