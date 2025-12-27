@@ -38,6 +38,7 @@ class LifeGame:
                 "max": self.settings.max_zoom,
                 "step": 1,
                 "sync_slider": self.settings.zoom_slider,
+                "invert": False,
             },
             {
                 "rect": self.settings.speed_slider.rect,
@@ -46,6 +47,7 @@ class LifeGame:
                 "max": self.settings.max_update_freq,
                 "step": 2,
                 "sync_slider": self.settings.speed_slider,
+                "invert": True,
             },
             {
                 "rect": self.settings.initial_population_slider.rect,
@@ -54,6 +56,7 @@ class LifeGame:
                 "max": 100,
                 "step": 5,
                 "sync_slider": self.settings.initial_population_slider,
+                "invert": False,
             },
         ]
 
@@ -63,7 +66,7 @@ class LifeGame:
     def _apply_scroll(self, target, event):
         # Determine scroll direction
         direction = 1 if event.y > 0 else -1
-        # Calculate the change in value based on scroll direction and step size
+        # Calculate the change in value based on scroll step
         delta = direction * target["step"]
 
         # Get current value and compute new value
@@ -73,11 +76,17 @@ class LifeGame:
         # Clamp value within min/max
         new_value = max(target["min"], min(target["max"], new_value))
 
-        # Apply new value
+        # Apply new value internally
         setattr(self.settings, target["attr"], new_value)
 
-        # Sync slider position
-        target["sync_slider"].set_val(new_value)
+        # Update slider visually
+        if target.get("invert", False):
+            # Invert slider handle: higher on slider = lower value
+            slider_val = target["sync_slider"].max_val - (new_value - target["min"])
+        else:
+            slider_val = new_value
+            
+        target["sync_slider"].set_val(slider_val)
 
 
     def reset_cells(self, grid_width, grid_height):
@@ -245,12 +254,22 @@ class LifeGame:
 
         self.update_simulation_settings()
 
-        # Step the simulation based on simulation speed
+        # Step the simulation while playing
         if self.playing:
             self.count += 1
-            if self.count >= self.settings.sim_speed:
+
+            # For inverted sliders, calc actual simulation ticks
+            actual_speed = self.settings.sim_speed
+            # Ex. if speed slider is inverted
+            # max_val = slider max, min_val = slider min
+            max_val = self.settings.speed_slider.max_val
+            min_val = self.settings.speed_slider.min_val
+            actual_speed = max_val - (self.settings.sim_speed - min_val)
+
+            if self.count >= actual_speed:
                 self.count = 0
                 self.simulation.step()
+            
         
 
     def update_simulation_settings(self):

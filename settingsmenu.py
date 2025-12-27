@@ -25,22 +25,24 @@ class SettingsMenu:
         self.panel_rect = pygame.Rect(5, 26, 178, 200)
 
         # Color button rects L, T, W, H
+        self.color_buttons = [
         # Top row
-        self.color_red = pygame.Rect(15, 163, 20, 20)
-        self.color_orange = pygame.Rect(38, 163, 20, 20)
-        self.color_yellow = pygame.Rect(61, 163, 20, 20)
-        self.color_green = pygame.Rect(84, 163, 20, 20)
-        self.color_blue = pygame.Rect(107, 163, 20, 20)
-        self.color_purple = pygame.Rect(130, 163, 20, 20)
-        self.color_cyan = pygame.Rect(153, 163, 20, 20)
-        # Bottom row
-        self.color_darkcyan = pygame.Rect(15, 188, 20, 20)
-        self.color_darkslategray = pygame.Rect(38, 188, 20, 20)
-        self.color_indigo = pygame.Rect(61, 188, 20, 20)
-        self.color_lightseagreen = pygame.Rect(84, 188, 20, 20)
-        self.color_steelblue = pygame.Rect(107, 188, 20, 20)
-        self.color_thistle = pygame.Rect(130, 188, 20, 20)
-        self.color_tan = pygame.Rect(153, 188, 20, 20)
+            (pygame.Rect(15, 163, 20, 20), RED),
+            (pygame.Rect(38, 163, 20, 20), ORANGE),
+            (pygame.Rect(61, 163, 20, 20), YELLOW),
+            (pygame.Rect(84, 163, 20, 20), GREEN),
+            (pygame.Rect(107, 163, 20, 20), BLUE),
+            (pygame.Rect(130, 163, 20, 20), PURPLE),
+            (pygame.Rect(153, 163, 20, 20), CYAN),
+            # Bottom row
+            (pygame.Rect(15, 188, 20, 20), "darkcyan"),
+            (pygame.Rect(38, 188, 20, 20), "darkslategray"),
+            (pygame.Rect(61, 188, 20, 20), "indigo"),
+            (pygame.Rect(84, 188, 20, 20), "lightseagreen"),
+            (pygame.Rect(107, 188, 20, 20), "steelblue"),
+            (pygame.Rect(130, 188, 20, 20), "thistle"),
+            (pygame.Rect(153, 188, 20, 20), "tan"),
+        ]
 
 
         # Sliders for settings
@@ -107,37 +109,12 @@ class SettingsMenu:
 
         # Check for color selection button clicks
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            # Top row
-            if self.color_red.collidepoint(event.pos):
-                self.cell_color = RED
-            elif self.color_orange.collidepoint(event.pos):
-                self.cell_color = ORANGE
-            elif self.color_yellow.collidepoint(event.pos):
-                self.cell_color = YELLOW
-            elif self.color_green.collidepoint(event.pos):
-                self.cell_color = GREEN
-            elif self.color_blue.collidepoint(event.pos):
-                self.cell_color = BLUE
-            elif self.color_purple.collidepoint(event.pos):
-                self.cell_color = PURPLE
-            elif self.color_cyan.collidepoint(event.pos):
-                self.cell_color = CYAN
-            # Bottom row
-            elif self.color_darkcyan.collidepoint(event.pos):
-                self.cell_color = 'darkcyan'
-            elif self.color_darkslategray.collidepoint(event.pos):
-                self.cell_color = 'darkslategray'
-            elif self.color_indigo.collidepoint(event.pos):
-                self.cell_color = 'indigo'
-            elif self.color_lightseagreen.collidepoint(event.pos):
-                self.cell_color = 'lightseagreen'
-            elif self.color_steelblue.collidepoint(event.pos):
-                self.cell_color = 'steelblue'
-            elif self.color_thistle.collidepoint(event.pos):
-                self.cell_color = 'thistle'
-            elif self.color_tan.collidepoint(event.pos):
-                self.cell_color = 'tan'
 
+            # Iterate through color buttons to see if one was clicked
+            for rect, color in self.color_buttons:
+                if rect.collidepoint(event.pos):
+                    self.cell_color = color
+                    break
 
 
         # Always forward events to sliders when menu is open
@@ -146,7 +123,7 @@ class SettingsMenu:
         self.initial_population_slider.handle_event(event)
 
         # Read slider values AFTER handling events
-        self.sim_speed = round(self.speed_slider.val)
+        self.sim_speed = max(0.5, self.speed_slider.val)
         self.zoom = round(self.zoom_slider.val)
         self.initial_cells = round(self.initial_population_slider.val)
 
@@ -248,7 +225,7 @@ class SettingsMenu:
         color_label_rect = color_label_surface.get_rect(
             centerx=self.panel_rect.centerx
         )
-        color_label_rect.bottom = self.color_red.top - 2
+        color_label_rect.bottom = 160
         screen.blit(color_label_surface, color_label_rect)
 
 
@@ -258,19 +235,5 @@ class SettingsMenu:
         self.initial_population_slider.draw(screen)
 
         # Draw color selection buttons
-        # Top row
-        self._draw_button(screen, self.color_red, color=RED)
-        self._draw_button(screen, self.color_orange, color=ORANGE)
-        self._draw_button(screen, self.color_yellow, color=YELLOW)
-        self._draw_button(screen, self.color_green, color=GREEN)
-        self._draw_button(screen, self.color_blue, color=BLUE)
-        self._draw_button(screen, self.color_purple, color=PURPLE)
-        self._draw_button(screen, self.color_cyan, color=CYAN)
-        # Bottom row
-        self._draw_button(screen, self.color_darkcyan, color='darkcyan')
-        self._draw_button(screen, self.color_darkslategray, color='darkslategray')
-        self._draw_button(screen, self.color_indigo, color='indigo')
-        self._draw_button(screen, self.color_lightseagreen, color='lightseagreen')
-        self._draw_button(screen, self.color_steelblue, color='steelblue')
-        self._draw_button(screen, self.color_thistle, color='thistle')
-        self._draw_button(screen, self.color_tan, color='tan')
+        for rect, color in self.color_buttons:
+            self._draw_button(screen, rect, color=color)
