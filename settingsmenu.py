@@ -97,6 +97,22 @@ class SettingsMenu:
         if not self.open:
             return
 
+        # Check for color selection button clicks
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.color_red.collidepoint(event.pos):
+                self.cell_color = RED
+            elif self.color_orange.collidepoint(event.pos):
+                self.cell_color = ORANGE
+            elif self.color_yellow.collidepoint(event.pos):
+                self.cell_color = YELLOW
+            elif self.color_green.collidepoint(event.pos):
+                self.cell_color = GREEN
+            elif self.color_blue.collidepoint(event.pos):
+                self.cell_color = BLUE
+            elif self.color_purple.collidepoint(event.pos):
+                self.cell_color = PURPLE
+            elif self.color_cyan.collidepoint(event.pos):
+                self.cell_color = CYAN
 
 
 

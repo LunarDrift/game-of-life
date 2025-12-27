@@ -27,6 +27,7 @@ class LifeGame:
         self.prev_zoom = self.settings.zoom
         self.prev_show_grid = self.settings.show_grid
         self.prev_sim_speed = self.settings.sim_speed
+        self.prev_cell_color = self.settings.cell_color
 
 
 #################################### HELPER METHODS ####################################
@@ -199,11 +200,15 @@ class LifeGame:
             # If we use sim_speed elsewhere, we can update it here
             self.prev_sim_speed = self.settings.sim_speed
 
+        if self.prev_cell_color != self.settings.cell_color:
+            # If something depends on cell_color, update it here
+            self.prev_cell_color = self.settings.cell_color
+
 
     # -------------------- Drawing --------------------
     def draw(self):
         self.screen.fill(GRAY)
-        self.view.draw_cells(self.simulation.positions, YELLOW)
+        self.view.draw_cells(self.simulation.positions, self.settings.cell_color)
 
         grid_width = WIDTH // self.settings.zoom
         grid_height = HEIGHT // self.settings.zoom
