@@ -46,7 +46,7 @@ class LifeGame:
                 "attr": "sim_speed",
                 "min": self.settings.min_update_freq,
                 "max": self.settings.max_update_freq,
-                "step": 2,
+                "step": 5,
                 "sync_slider": self.settings.speed_slider,
                 "invert": True,
             },
@@ -120,7 +120,7 @@ class LifeGame:
 
 
     def _handle_scrollwheel(self, event):
-        """Handle scroll wheel events for changing settings values while the menu is open."""
+        """Handle scroll wheel events for all sliders and zoom consistently."""
         if event.type != pygame.MOUSEWHEEL:
             return
         
@@ -135,60 +135,45 @@ class LifeGame:
             
             # Not over any slider -> zoom if over grid
             if not self.settings.panel_rect.collidepoint(mouse_pos):
-                self._adjust_zoom(event)
-            return
+                zoom_target = next(
+                    t for t in self.scroll_targets if t["attr"] == "zoom"
+                )
+                self._apply_scroll(zoom_target, event)
+                return
         
         # Menu closed -> always zoom
-        self._adjust_zoom(event)
+        else:
+            zoom_target = next(
+                t for t in self.scroll_targets if t["attr"] == "zoom"
+            )
+            self._apply_scroll(zoom_target, event)
 
 
     def _apply_scroll(self, target, event):
-        # Determine scroll direction
-        direction = 1 if event.y > 0 else -1
-        # Calculate the change in value based on scroll step
-        delta = direction * target["step"]
+        """Apply scroll delta to the slider, respecting inversion,
+        and update the corresponding setting value."""
 
         slider = target["sync_slider"]
+        step = target["step"]
 
-        # Compute new slider value
-        if target.get("invert", False):
-            # For inverted slider, scrolling up decreases value
-            new_slider_val = slider.val - delta
-        else:
-            # Normal slider behavior
-            new_slider_val = slider.val + delta
+        # Determine scroll direction
+        delta = step if event.y > 0 else -step
 
-        # Constrain within min/max
-        new_slider_val = max(
-            slider.min_val, min(slider.max_val, new_slider_val)
+        # Update slider value within min/max bounds
+        new_val = max(
+            slider.min_val, min(slider.max_val, slider.val + delta)
         )
-        slider.set_val(new_slider_val)
+        slider.set_val(new_val)
 
-        # Update the setting value based on slider
+        # Compute the actual setting value based on slider
         if target.get("invert", False):
             # Inverted
-            value = slider.max_val - (new_slider_val - target["min"])
+            value = slider.max_val - (new_val - target["min"])
         else:
-            value = new_slider_val
+            value = new_val
 
-
+        # Update the settings attribute
         setattr(self.settings, target["attr"], value)
-
-
-    def _adjust_zoom(self, event):
-        """Adjust zoom level based on scroll wheel input."""
-        if event.y > 0:
-            self.settings.zoom = min(
-                self.settings.zoom + 1,
-                self.settings.max_zoom
-            )
-        elif event.y < 0:
-            self.settings.zoom = max(
-                self.settings.zoom - 1,
-                self.settings.min_zoom
-            )
-
-        self.settings.zoom_slider.set_val(self.settings.zoom)
 
 
     def _adjust_speed(self, event):
@@ -314,8 +299,8 @@ class LifeGame:
         self.screen.fill(GRAY)
         self.view.draw_cells(self.simulation.positions, self.settings.cell_color)
 
-        grid_width = WIDTH // self.settings.zoom
-        grid_height = HEIGHT // self.settings.zoom
+        grid_width = int(WIDTH // self.settings.zoom)
+        grid_height = int(HEIGHT // self.settings.zoom)
         self.view.draw_grid(
             grid_width,
             grid_height,

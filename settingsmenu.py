@@ -12,7 +12,7 @@ class SettingsMenu:
 
         # User-adjustable settings
         self.zoom = 10
-        self.min_zoom = 1
+        self.min_zoom = 5
         self.max_zoom = 20
         self.initial_cells = 50
         self.sim_speed = 30
