@@ -28,7 +28,7 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 
 ### Settings Menu
 - **Zoom level** (grid cell size)
-- **Simulation speed** (inverted for user friendliness)
+- **Simulation speed**
 - **Initial population percentage**
 - Toggle grid visibility
 - Mouse wheel support for adjusting sliders
