@@ -1,7 +1,8 @@
 import pygame
 from slider import SimpleSlider
 from constants import (
-    RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN
+    WHITE, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN, BUTTON_LABEL_COLOR,
+    BUTTON_COLOR, PANEL_COLOR, PANEL_BORDER_COLOR
 )
 
 class SettingsMenu:
@@ -11,7 +12,7 @@ class SettingsMenu:
 
         # User-adjustable settings
         self.zoom = 10
-        self.min_zoom = 2
+        self.min_zoom = 1
         self.max_zoom = 20
         self.initial_cells = 50
         self.sim_speed = 30
@@ -71,7 +72,7 @@ class SettingsMenu:
             13,
             0,
             100,
-            start_val=25    # Start at 25%
+            start_val=15    # Start at 15%
         )
 
 
@@ -81,7 +82,7 @@ class SettingsMenu:
 ############################## HELPERS ##############################
 # Internal methods for drawing menu components and updating settings
 
-    def _draw_button(self, screen, rect, label=None, color=(120, 120, 120, 100)):
+    def _draw_button(self, screen, rect, label=None, label_color=(0, 0, 0), color=(0, 0, 0, 180)):
         """Draw a semi-transparent button with optional label."""
         button_surf = pygame.Surface(
             (rect.width, rect.height),
@@ -90,7 +91,7 @@ class SettingsMenu:
         button_surf.fill(color)  # Semi-transparent gray by default
         screen.blit(button_surf, rect.topleft)
 
-        txt = self.font.render(label, True, (0, 0, 0))
+        txt = self.font.render(label, True, label_color)
         screen.blit(
             txt,
             txt.get_rect(center=rect.center)
@@ -103,13 +104,13 @@ class SettingsMenu:
             (self.panel_rect.width, self.panel_rect.height),
             pygame.SRCALPHA
         )
-        panel_surf.fill((40, 40, 40, 150)) # Semi-transparent dark gray
+        panel_surf.fill(PANEL_COLOR)
         screen.blit(panel_surf, self.panel_rect.topleft)
 
         # Draw panel border
         pygame.draw.rect(
             screen,
-            (200, 200, 0),
+            PANEL_BORDER_COLOR,
             self.panel_rect,
             2,
             border_radius=8
@@ -118,7 +119,7 @@ class SettingsMenu:
 
     def _draw_slider_label(self, screen, slider, text, offset=-2):
         """Draw the label above a given slider."""
-        label_surface = self.font.render(text, True, (255, 255, 255))
+        label_surface = self.font.render(text, True, WHITE)
         label_rect = label_surface.get_rect(
             centerx=self.panel_rect.centerx
         )
@@ -149,7 +150,7 @@ class SettingsMenu:
     def _draw_color_buttons(self, screen):
         """Draw all cell color buttons and the label."""
         color_label_surface = self.font.render(
-            "Cell Colors", True, (255, 255, 255)
+            "Cell Colors", True, WHITE
         )
         color_label_rect = color_label_surface.get_rect(
             centerx=self.panel_rect.centerx
@@ -222,7 +223,13 @@ class SettingsMenu:
     def draw(self, screen):
         """Draw the settings menu button and panel if open."""
         # Settings button
-        self._draw_button(screen, self.button_rect, label="Settings", color=(0, 0, 0, 180))
+        self._draw_button(
+            screen,
+            self.button_rect,
+            label="Settings",
+            label_color=BUTTON_LABEL_COLOR,
+            color=BUTTON_COLOR
+        )
 
         if not self.open:
             return
