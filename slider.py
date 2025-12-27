@@ -1,19 +1,31 @@
 import pygame
 
 class SimpleSlider:
-    def __init__(self, x, y, w, h, min_val, max_val):
+    def __init__(self, x, y, w, h, min_val, max_val, start_val=None):
         self.rect = pygame.Rect(x, y, w, h)
         self.min_val = min_val
         self.max_val = max_val
-        self.val = max_val // 2  # Start in the middle
+        self.val = max_val
         self.grabbed = False
+
+        # Determine initial handle position/value
+        if start_val is None:
+            # Center handle if no start value provided
+            self.val = (min_val + max_val) / 2
+        else:
+            self.val = max(min_val, min(start_val, max_val))
+
+        # Set handle position based on initial value
+        percent = (self.val - self.min_val) / (self.max_val - self.min_val)
+
         # The "handle" of the slider
         self.handle_rect = pygame.Rect(
-            x + (w // 2) - (x // 2),    # Center handle initially
+            x + percent * w - 5,    # 10 px handle, centered
             y,
             10,
             h
         )
+        
 
     def set_val(self, val):
         self.val = max(self.min_val, min(val, self.max_val))

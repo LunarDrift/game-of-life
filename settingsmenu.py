@@ -70,7 +70,8 @@ class SettingsMenu:
             160,
             13,
             0,
-            100
+            100,
+            start_val=25    # Start at 25%
         )
 
 
