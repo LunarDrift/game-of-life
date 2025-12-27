@@ -62,6 +62,84 @@ class LifeGame:
 
 
 ############################## HELPER METHODS ##############################
+# Internal methods for handling input and game logic
+
+    def _handle_keyboard(self, event):
+        if event.type != pygame.KEYDOWN:
+            return
+        
+        if event.key == pygame.K_SPACE:
+            # Pause or unpause the game
+            self.playing = not self.playing
+
+        elif event.key == pygame.K_c:
+            # Clear the grid and pause the simulation
+            self.simulation.positions.clear()
+            self.playing = False
+            self.count = 0
+
+        elif event.key == pygame.K_r:
+            self._reset_cells(
+                WIDTH // self.settings.zoom,
+                HEIGHT // self.settings.zoom
+            )
+
+        elif event.key == pygame.K_g:
+            # Toggle grid lines
+            self.settings.show_grid = not self.settings.show_grid
+        
+        elif event.key == pygame.K_ESCAPE:
+            pygame.quit()
+            exit()
+
+
+    def _handle_mouse(self):
+        # Mouse Drawing
+        if not self._can_draw():
+            return
+        
+        mouse_pressed = pygame.mouse.get_pressed()
+        # Click and drag to draw new cells
+        x, y = pygame.mouse.get_pos()
+        col = x // self.settings.zoom
+        row = y // self.settings.zoom
+        pos = (col, row)
+
+        if mouse_pressed[0]:
+            # Left click to add a cell
+            if 0 <= col < self.simulation.width and \
+            0 <= row < self.simulation.height:
+                self.simulation.positions.add(pos)
+
+        elif mouse_pressed[2]:
+            # Right click to remove a cell
+            if pos in self.simulation.positions:
+                # Remove position if it already exists
+                self.simulation.positions.remove(pos)
+
+
+    def _handle_scrollwheel(self, event):
+        """Handle scroll wheel events for changing settings values while the menu is open."""
+        if event.type != pygame.MOUSEWHEEL:
+            return
+        
+        mouse_pos = pygame.mouse.get_pos()
+
+        # Menu open -> check if over sliders
+        if self.settings.open:
+            for target in self.scroll_targets:
+                if target["rect"].collidepoint(mouse_pos):
+                    self._apply_scroll(target, event)
+                    return
+            
+            # Not over any slider -> zoom if over grid
+            if not self.settings.panel_rect.collidepoint(mouse_pos):
+                self._adjust_zoom(event)
+            return
+        
+        # Menu closed -> always zoom
+        self._adjust_zoom(event)
+
 
     def _apply_scroll(self, target, event):
         # Determine scroll direction
@@ -89,89 +167,6 @@ class LifeGame:
         target["sync_slider"].set_val(slider_val)
 
 
-    def reset_cells(self, grid_width, grid_height):
-        self.simulation.positions.clear()
-
-        # Probability-based generation for cells
-        prob_alive = self.settings.initial_population_slider.val / 100
-        positions = set()
-        
-        for col in range(grid_width):
-            for row in range(grid_height):
-                if random.random() < prob_alive:
-                    positions.add((col, row))
-        self.simulation.positions = positions
-
-
-    # -------------------- Event Handling --------------------
-    def handle_events(self):
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.QUIT:
-                return False
-
-            self.settings.handle_event(event)
-            self.handle_scrollwheel(event)
-            self.controls.handle_event(event)
-            self.handle_keyboard(event)
-        
-        return True
-
-
-    def handle_keyboard(self, event):
-        if event.type != pygame.KEYDOWN:
-            return
-        
-        if event.key == pygame.K_SPACE:
-            # Pause or unpause the game
-            self.playing = not self.playing
-
-        elif event.key == pygame.K_c:
-            # Clear the grid and pause the simulation
-            self.simulation.positions.clear()
-            self.playing = False
-            self.count = 0
-
-        elif event.key == pygame.K_r:
-            self.reset_cells(
-                WIDTH // self.settings.zoom,
-                HEIGHT // self.settings.zoom
-            )
-
-        elif event.key == pygame.K_g:
-            # Toggle grid lines
-            self.settings.show_grid = not self.settings.show_grid
-        
-        elif event.key == pygame.K_ESCAPE:
-            pygame.quit()
-            exit()
-
-    # -------------------- Mouse Drawing --------------------
-    def handle_mouse(self):
-        # Mouse Drawing
-        if not self.can_draw():
-            return
-        
-        mouse_pressed = pygame.mouse.get_pressed()
-        # Click and drag to draw new cells
-        x, y = pygame.mouse.get_pos()
-        col = x // self.settings.zoom
-        row = y // self.settings.zoom
-        pos = (col, row)
-
-        if mouse_pressed[0]:
-            # Left click to add a cell
-            if 0 <= col < self.simulation.width and \
-            0 <= row < self.simulation.height:
-                self.simulation.positions.add(pos)
-
-        elif mouse_pressed[2]:
-            # Right click to remove a cell
-            if pos in self.simulation.positions:
-                # Remove position if it already exists
-                self.simulation.positions.remove(pos)
-
-    
     def _adjust_zoom(self, event):
         """Adjust zoom level based on scroll wheel input."""
         if event.y > 0:
@@ -210,30 +205,21 @@ class LifeGame:
         self.settings.initial_population_slider.set_val(new_pop)
 
 
-    def handle_scrollwheel(self, event):
-        """Handle scroll wheel events for changing settings values while the menu is open."""
-        if event.type != pygame.MOUSEWHEEL:
-            return
+    def _reset_cells(self, grid_width, grid_height):
+        self.simulation.positions.clear()
+
+        # Probability-based generation for cells
+        prob_alive = self.settings.initial_population_slider.val / 100
+        positions = set()
         
-        mouse_pos = pygame.mouse.get_pos()
+        for col in range(grid_width):
+            for row in range(grid_height):
+                if random.random() < prob_alive:
+                    positions.add((col, row))
+        self.simulation.positions = positions
 
-        # Menu open -> check if over sliders
-        if self.settings.open:
-            for target in self.scroll_targets:
-                if target["rect"].collidepoint(mouse_pos):
-                    self._apply_scroll(target, event)
-                    return
-            
-            # Not over any slider -> zoom if over grid
-            if not self.settings.panel_rect.collidepoint(mouse_pos):
-                self._adjust_zoom(event)
-            return
-        
-        # Menu closed -> always zoom
-        self._adjust_zoom(event)
-
-
-    def can_draw(self):
+    
+    def _can_draw(self):
         if self.settings.open or self.controls.open:
             return False
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -243,8 +229,29 @@ class LifeGame:
             return False
         return True
 
+############################## END HELPER METHODS ##############################
 
-    # -------------------- Simulation Update --------------------
+############################## EVENTS ##############################
+# Handle all pygame events (keyboard, mouse, etc.)
+
+    def handle_events(self):
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                return False
+
+            self.settings.handle_event(event)
+            self._handle_scrollwheel(event)
+            self.controls.handle_event(event)
+            self._handle_keyboard(event)
+        
+        return True    
+
+############################## END EVENTS ##############################
+
+############################## UPDATE ##############################
+# Update simulation state and settings
+
     def update_simulation(self):
         self.simulation.update_grid_size(
             WIDTH,
@@ -270,7 +277,6 @@ class LifeGame:
                 self.count = 0
                 self.simulation.step()
             
-        
 
     def update_simulation_settings(self):
         # Update dependent settings in simulation if they have changed
@@ -291,8 +297,11 @@ class LifeGame:
             # If something depends on cell_color, update it here
             self.prev_cell_color = self.settings.cell_color
 
+############################## END UPDATE ##############################
 
-    # -------------------- Drawing --------------------
+############################## DRAWING ##############################
+# Draw all game elements to the screen
+
     def draw(self):
         self.screen.fill(GRAY)
         self.view.draw_cells(self.simulation.positions, self.settings.cell_color)
@@ -312,8 +321,10 @@ class LifeGame:
         pygame.display.set_caption("Playing" if self.playing else "Paused")
         pygame.display.flip()
 
+############################## END DRAWING ##############################
 
-    # -------------------- Main Loop --------------------
+############################## MAIN LOOP ##############################
+
     def main(self):
         running = True
         self.playing = False
@@ -322,7 +333,7 @@ class LifeGame:
         while running:
             self.clock.tick(FPS)
             running = self.handle_events()
-            self.handle_mouse()
+            self._handle_mouse()
             self.update_simulation()
             self.draw()
 
