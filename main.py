@@ -4,7 +4,8 @@ from simulation import LifeSimulation
 from view import LifeView
 from settingsmenu import SettingsMenu
 from controlsmenu import ControlsMenu
-from constants import WIDTH, HEIGHT, FPS, BLACK, GRAY, YELLOW
+from constants import WIDTH, HEIGHT, FPS, BLACK, GRAY
+from debug import debug
 
 pygame.init()
 
@@ -147,24 +148,31 @@ class LifeGame:
         # Calculate the change in value based on scroll step
         delta = direction * target["step"]
 
-        # Get current value and compute new value
-        current = getattr(self.settings, target["attr"])
-        new_value = current + delta
+        slider = target["sync_slider"]
 
-        # Clamp value within min/max
-        new_value = max(target["min"], min(target["max"], new_value))
-
-        # Apply new value internally
-        setattr(self.settings, target["attr"], new_value)
-
-        # Update slider visually
+        # Compute new slider value
         if target.get("invert", False):
-            # Invert slider handle: higher on slider = lower value
-            slider_val = target["sync_slider"].max_val - (new_value - target["min"])
+            # For inverted slider, scrolling up decreases value
+            new_slider_val = slider.val - delta
         else:
-            slider_val = new_value
-            
-        target["sync_slider"].set_val(slider_val)
+            # Normal slider behavior
+            new_slider_val = slider.val + delta
+
+        # Constrain within min/max
+        new_slider_val = max(
+            slider.min_val, min(slider.max_val, new_slider_val)
+        )
+        slider.set_val(new_slider_val)
+
+        # Update the setting value based on slider
+        if target.get("invert", False):
+            # Inverted
+            value = slider.max_val - (new_slider_val - target["min"])
+        else:
+            value = new_slider_val
+
+
+        setattr(self.settings, target["attr"], value)
 
 
     def _adjust_zoom(self, event):
@@ -250,7 +258,7 @@ class LifeGame:
 ############################## END EVENTS ##############################
 
 ############################## UPDATE ##############################
-# Update simulation state and settings
+# Update simulation state and settings based on events
 
     def update_simulation(self):
         self.simulation.update_grid_size(
@@ -271,7 +279,7 @@ class LifeGame:
             # max_val = slider max, min_val = slider min
             max_val = self.settings.speed_slider.max_val
             min_val = self.settings.speed_slider.min_val
-            actual_speed = max_val - (self.settings.sim_speed - min_val)
+            actual_speed = self.settings.get_speed()
 
             if self.count >= actual_speed:
                 self.count = 0
@@ -300,7 +308,7 @@ class LifeGame:
 ############################## END UPDATE ##############################
 
 ############################## DRAWING ##############################
-# Draw all game elements to the screen
+# Draw all updated game elements to the screen
 
     def draw(self):
         self.screen.fill(GRAY)
