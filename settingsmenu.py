@@ -122,9 +122,7 @@ class SettingsMenu:
         self.initial_population_slider.handle_event(event)
 
         # Read slider values AFTER handling events
-        slider = self.speed_slider
-        # Invert speed slider values to be more intuitive
-        self.sim_speed = round(slider.max_val - (slider.val - slider.min_val))
+        self.sim_speed = round(self.speed_slider.val)
         self.zoom = round(self.zoom_slider.val)
         self.initial_cells = round(self.initial_population_slider.val)
 

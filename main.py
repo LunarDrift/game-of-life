@@ -29,8 +29,56 @@ class LifeGame:
         self.prev_sim_speed = self.settings.sim_speed
         self.prev_cell_color = self.settings.cell_color
 
+        # Scroll wheel targets for adjusting settings
+        self.scroll_targets = [
+            {
+                "rect": self.settings.zoom_slider.rect,
+                "attr": "zoom",
+                "min": self.settings.min_zoom,
+                "max": self.settings.max_zoom,
+                "step": 1,
+                "sync_slider": self.settings.zoom_slider,
+            },
+            {
+                "rect": self.settings.speed_slider.rect,
+                "attr": "sim_speed",
+                "min": self.settings.min_update_freq,
+                "max": self.settings.max_update_freq,
+                "step": 2,
+                "sync_slider": self.settings.speed_slider,
+            },
+            {
+                "rect": self.settings.initial_population_slider.rect,
+                "attr": "initial_cells",
+                "min": 0,
+                "max": 100,
+                "step": 5,
+                "sync_slider": self.settings.initial_population_slider,
+            },
+        ]
 
-#################################### HELPER METHODS ####################################
+
+############################## HELPER METHODS ##############################
+
+    def _apply_scroll(self, target, event):
+        # Determine scroll direction
+        direction = 1 if event.y > 0 else -1
+        # Calculate the change in value based on scroll direction and step size
+        delta = direction * target["step"]
+
+        # Get current value and compute new value
+        current = getattr(self.settings, target["attr"])
+        new_value = current + delta
+
+        # Clamp value within min/max
+        new_value = max(target["min"], min(target["max"], new_value))
+
+        # Apply new value
+        setattr(self.settings, target["attr"], new_value)
+
+        # Sync slider position
+        target["sync_slider"].set_val(new_value)
+
 
     def reset_cells(self, grid_width, grid_height):
         self.simulation.positions.clear()
@@ -159,41 +207,20 @@ class LifeGame:
             return
         
         mouse_pos = pygame.mouse.get_pos()
-        
-        menu_open = self.settings.open
-        over_panel = self.settings.panel_rect.collidepoint(mouse_pos)
 
-        over_zoom_slider = (
-            self.settings.zoom_slider.rect.collidepoint(mouse_pos)
-        )
-        over_speed_slider = (
-            self.settings.speed_slider.rect.collidepoint(mouse_pos)
-        )
-        over_pop_slider = (
-            self.settings.initial_population_slider.rect.collidepoint(mouse_pos)
-        )
-
-
-        # --- MENU OPEN BEHAVIOR ---
-        if menu_open:
-            if over_zoom_slider:
+        # Menu open -> check if over sliders
+        if self.settings.open:
+            for target in self.scroll_targets:
+                if target["rect"].collidepoint(mouse_pos):
+                    self._apply_scroll(target, event)
+                    return
+            
+            # Not over any slider -> zoom if over grid
+            if not self.settings.panel_rect.collidepoint(mouse_pos):
                 self._adjust_zoom(event)
-                return
-            elif over_speed_slider:
-                self._adjust_speed(event)
-                return
-            elif over_pop_slider:
-                self._adjust_population(event)
-                return
-            elif not over_panel:
-                # Scroll over grid while menu open -> zoom
-                self._adjust_zoom(event)
-                return
-        
-            # Otherwise: over panel but not a slider -> do nothing
             return
         
-        # --- MENU CLOSED BEHAVIOR ---
+        # Menu closed -> always zoom
         self._adjust_zoom(event)
 
 
