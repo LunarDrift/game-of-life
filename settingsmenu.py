@@ -1,5 +1,7 @@
 import pygame
 from slider import SimpleSlider
+from slidersetting import SliderSetting
+from colorselector import ColorSelector
 from constants import (
     WHITE, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN, BUTTON_LABEL_COLOR,
     BUTTON_COLOR, PANEL_COLOR, PANEL_BORDER_COLOR
@@ -9,8 +11,11 @@ class SettingsMenu:
     def __init__(self):
         self.open = True
         self.clicked = False
+        self.button_rect = pygame.Rect(5, 5, 80, 20)
+        self.panel_rect = pygame.Rect(5, 26, 178, 200)
+        self.font = pygame.font.SysFont("ubuntumono", 13)
 
-        # User-adjustable settings
+         # User-adjustable settings
         self.zoom = 10
         self.min_zoom = 5
         self.max_zoom = 20
@@ -19,11 +24,38 @@ class SettingsMenu:
         self.min_update_freq = 1
         self.max_update_freq = 100
         self.show_grid = False
-        self.cell_color = YELLOW
+        # self.cell_color = YELLOW
 
-        # Settings button and panel rectangles
-        self.button_rect = pygame.Rect(5, 5, 80, 20)
-        self.panel_rect = pygame.Rect(5, 26, 178, 200)
+
+        # Create slider instances
+        self.speed_slider = SimpleSlider(
+            15, 58, 160, 13,
+            self.min_update_freq, self.max_update_freq
+        )
+
+        self.zoom_slider = SimpleSlider(
+            15, 93, 160, 13,
+            self.min_zoom, self.max_zoom
+        )
+
+        self.initial_population_slider = SimpleSlider(
+            15, 128, 160, 13,
+            0, 100,
+            start_val=15    # Start at 15%
+        )
+
+        # Create sliders list
+        self.sliders = [
+            SliderSetting(
+                "Simulation Speed", self.speed_slider, self.panel_rect
+            ),
+            SliderSetting(
+                "Zoom Level", self.zoom_slider, self.panel_rect
+            ),
+            SliderSetting(
+                "Cell Population", self.initial_population_slider, self.panel_rect
+            ),
+        ]
 
         # Color button rects L, T, W, H
         self.color_buttons = [
@@ -45,39 +77,12 @@ class SettingsMenu:
             (pygame.Rect(153, 188, 20, 20), "tan"),
         ]
 
-
-        # Sliders for settings
-        self.speed_slider = SimpleSlider(
-            15,
-            58,
-            160,
-            13,
-            self.min_update_freq,
-            self.max_update_freq
-        )
-
-        self.zoom_slider = SimpleSlider(
-            15,
-            93,
-            160,
-            13,
-            self.min_zoom,
-            self.max_zoom
-        )
-
-        self.initial_population_slider = SimpleSlider(
-            15,
-            128,
-            160,
-            13,
-            0,
-            100,
-            start_val=15    # Start at 15%
-        )
+        self.color_selector = ColorSelector(self.color_buttons, self.font)
 
 
-
-        self.font = pygame.font.SysFont("ubuntumono", 13)
+        # # Settings button and panel rectangles
+        # self.button_rect = pygame.Rect(5, 5, 80, 20)
+        # self.panel_rect = pygame.Rect(5, 26, 178, 200)
 
 ############################## HELPERS ##############################
 # Internal methods for drawing menu components and updating settings
@@ -116,51 +121,6 @@ class SettingsMenu:
             border_radius=8
         )
 
-
-    def _draw_slider_label(self, screen, slider, text, offset=-2):
-        """Draw the label above a given slider."""
-        label_surface = self.font.render(text, True, WHITE)
-        label_rect = label_surface.get_rect(
-            centerx=self.panel_rect.centerx
-        )
-        label_rect.bottom = slider.rect.top + offset
-        screen.blit(label_surface, label_rect)
-
-
-    def _draw_sliders(self, screen):
-        """Draw all sliders and their labels."""
-        self._draw_slider_label(
-            screen, self.speed_slider, f"Simulation Speed: {round(self.speed_slider.val)}"
-        )
-        self._draw_slider_label(
-            screen, self.zoom_slider, f"Zoom Level: {round(self.zoom_slider.val)}"
-        )
-        self._draw_slider_label(
-            screen,
-            self.initial_population_slider,
-            f"Initial Population: {round(self.initial_population_slider.val)}%",
-        )
-
-        # Draw sliders themselves
-        self.speed_slider.draw(screen)
-        self.zoom_slider.draw(screen)
-        self.initial_population_slider.draw(screen)
-
-
-    def _draw_color_buttons(self, screen):
-        """Draw all cell color buttons and the label."""
-        color_label_surface = self.font.render(
-            "Cell Colors", True, WHITE
-        )
-        color_label_rect = color_label_surface.get_rect(
-            centerx=self.panel_rect.centerx
-        )
-        color_label_rect.bottom = 160
-        screen.blit(color_label_surface, color_label_rect)
-
-        for rect, color in self.color_buttons:
-            self._draw_button(screen, rect, color=color)
-
     
     def get_speed(self):
         """Return actual ticks for simulation based on inverted slider value."""
@@ -174,30 +134,21 @@ class SettingsMenu:
 # Handle all events related to the settings menu
 
     def handle_event(self, event):
+        """Handle events for the settings menu."""
         # Check if the settings button is clicked
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.button_rect.collidepoint(event.pos):
                 self.open = not self.open
                 self.clicked = True
                 return
-            
-        # If menu is not open, ignore other events
+
         if not self.open:
             return
-
-        # Check for color selection button clicks
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-
-            # Iterate through color buttons to see if one was clicked
-            for rect, color in self.color_buttons:
-                if rect.collidepoint(event.pos):
-                    self.cell_color = color
-                    break
-
-        # Always forward events to sliders when menu is open
-        self.speed_slider.handle_event(event)
-        self.zoom_slider.handle_event(event)
-        self.initial_population_slider.handle_event(event)
+        
+        for slider in self.sliders:
+            slider.handle_event(event)
+        
+        self.color_selector.handle_event(event)
 
         # Read slider values AFTER handling events
         self.sim_speed = max(0.5, self.speed_slider.val)
@@ -222,7 +173,7 @@ class SettingsMenu:
 
     def draw(self, screen):
         """Draw the settings menu button and panel if open."""
-        # Settings button
+        # Draw settings button
         self._draw_button(
             screen,
             self.button_rect,
@@ -234,7 +185,8 @@ class SettingsMenu:
         if not self.open:
             return
         
-        # Panel + sliders + colors
+        # Draw panel background/border, sliders, color buttons
         self._draw_panel(screen)
-        self._draw_sliders(screen)
-        self._draw_color_buttons(screen)
+        for slider in self.sliders:
+            slider.draw(screen)
+        self.color_selector.draw(screen, self.panel_rect)

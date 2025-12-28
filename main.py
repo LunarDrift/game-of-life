@@ -4,6 +4,7 @@ from simulation import LifeSimulation
 from view import LifeView
 from settingsmenu import SettingsMenu
 from controlsmenu import ControlsMenu
+from colorselector import ColorSelector
 from constants import WIDTH, HEIGHT, FPS, BLACK, GRAY
 from debug import debug
 
@@ -23,12 +24,16 @@ class LifeGame:
         )
         self.view = LifeView(self.screen, self.settings.zoom)
         self.controls = ControlsMenu()
+        self.color_selector = ColorSelector(
+            self.settings.color_buttons,
+            self.settings.font
+        )
 
         # Keep track of previous settings to detect changes
         self.prev_zoom = self.settings.zoom
         self.prev_show_grid = self.settings.show_grid
         self.prev_sim_speed = self.settings.sim_speed
-        self.prev_cell_color = self.settings.cell_color
+        self.prev_cell_color = self.color_selector.selected_color
 
         # Scroll wheel targets for adjusting settings
         self.scroll_targets = [
@@ -237,6 +242,7 @@ class LifeGame:
             self._handle_scrollwheel(event)
             self.controls.handle_event(event)
             self._handle_keyboard(event)
+            self.color_selector.handle_event(event)
         
         return True    
 
@@ -286,9 +292,9 @@ class LifeGame:
             # If we use sim_speed elsewhere, we can update it here
             self.prev_sim_speed = self.settings.sim_speed
 
-        if self.prev_cell_color != self.settings.cell_color:
+        if self.prev_cell_color != self.color_selector.selected_color:
             # If something depends on cell_color, update it here
-            self.prev_cell_color = self.settings.cell_color
+            self.prev_cell_color = self.color_selector.selected_color
 
 ############################## END UPDATE ##############################
 
@@ -297,7 +303,7 @@ class LifeGame:
 
     def draw(self):
         self.screen.fill(GRAY)
-        self.view.draw_cells(self.simulation.positions, self.settings.cell_color)
+        self.view.draw_cells(self.simulation.positions, self.color_selector.selected_color)
 
         grid_width = int(WIDTH // self.settings.zoom)
         grid_height = int(HEIGHT // self.settings.zoom)
