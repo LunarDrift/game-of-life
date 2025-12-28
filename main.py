@@ -5,7 +5,7 @@ from view import LifeView
 from settingsmenu import SettingsMenu
 from controlsmenu import ControlsMenu
 from colorselector import ColorSelector
-from constants import WIDTH, HEIGHT, FPS, BLACK, GRAY
+from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR
 from debug import debug
 
 pygame.init()
@@ -240,15 +240,7 @@ class LifeGame:
         if self.playing:
             self.count += 1
 
-            # For inverted sliders, calc actual simulation ticks
-            actual_speed = self.settings.sim_speed
-            # Ex. if speed slider is inverted
-            # max_val = slider max, min_val = slider min
-            max_val = self.settings.speed_slider.max_val
-            min_val = self.settings.speed_slider.min_val
-            actual_speed = self.settings.get_speed()
-
-            if self.count >= actual_speed:
+            if self.count >= self.settings.get_speed():
                 self.count = 0
                 self.simulation.step()
             
@@ -286,7 +278,7 @@ class LifeGame:
         self.view.draw_grid(
             grid_width,
             grid_height,
-            BLACK,
+            GRID_COLOR,
             self.settings.show_grid
         )
 

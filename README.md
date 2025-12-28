@@ -69,6 +69,8 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 ├── view.py                # Rendering logic  
 ├── settingsmenu.py        # Settings UI and sliders  
 ├── controlsmenu.py        # Controls / help menu  
+├── colorselector.py       # Manages cell color selection
+├── slidersetting.py       # Manages slider labels/value display
 ├── slider.py              # Reusable slider component  
 ├── constants.py           # Shared constants
 ```
@@ -82,11 +84,8 @@ This project is intentionally **iterative and experimental**.
 
 Instead of following a strict tutorial, features are added based on questions like:
 >What if I add this?
-
 >How would I make this feel better to use?
-
 >Where does this logic actually belong?
-
 
 Refactoring has been an expected and encouraged part of the process.
 

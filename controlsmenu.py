@@ -5,6 +5,7 @@ from constants import (
 
 
 class ControlsMenu:
+    """Menu displaying control instructions with toggle button."""
     def __init__(self):
         self.open = False
         self.clicked = False

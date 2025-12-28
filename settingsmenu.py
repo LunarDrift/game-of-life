@@ -24,8 +24,6 @@ class SettingsMenu:
         self.min_update_freq = 1
         self.max_update_freq = 100
         self.show_grid = False
-        # self.cell_color = YELLOW
-
 
         # Create slider instances
         self.speed_slider = SimpleSlider(
@@ -79,10 +77,6 @@ class SettingsMenu:
 
         self.color_selector = ColorSelector(self.color_buttons, self.font)
 
-
-        # # Settings button and panel rectangles
-        # self.button_rect = pygame.Rect(5, 5, 80, 20)
-        # self.panel_rect = pygame.Rect(5, 26, 178, 200)
 
 ############################## HELPERS ##############################
 # Internal methods for drawing menu components and updating settings

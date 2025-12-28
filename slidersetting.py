@@ -2,6 +2,7 @@ import pygame
 from constants import WHITE
 
 class SliderSetting:
+    """Slider with label and value display."""
     def __init__(self, label, slider, panel_rect=None, step=1):
         self.label = label
         self.slider = slider

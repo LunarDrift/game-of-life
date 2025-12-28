@@ -2,6 +2,7 @@ import pygame
 from constants import WHITE, YELLOW
 
 class ColorSelector:
+    """Color selection buttons for cell colors."""
     def __init__(self, color_buttons, font):
         self.color_buttons = color_buttons
         self.selected_color = YELLOW
