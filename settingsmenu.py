@@ -49,7 +49,7 @@ class SettingsMenu:
                 self.speed_slider,
                 self.panel_rect,
                 step=5,
-                display_value_fn=lambda val: max(1, round(val / 10))
+                display_value_fn=lambda val: max(1, round(val / 2))
             ),
             SliderSetting(
                 "Zoom Level", self.zoom_slider, self.panel_rect
