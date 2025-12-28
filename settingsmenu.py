@@ -47,13 +47,13 @@ class SettingsMenu:
         # Create sliders list
         self.sliders = [
             SliderSetting(
-                "Simulation Speed", self.speed_slider, self.panel_rect
+                "Simulation Speed", self.speed_slider, self.panel_rect, step=5
             ),
             SliderSetting(
                 "Zoom Level", self.zoom_slider, self.panel_rect
             ),
             SliderSetting(
-                "Cell Population", self.initial_population_slider, self.panel_rect
+                "Cell Population", self.initial_population_slider, self.panel_rect, step=5
             ),
         ]
 
@@ -147,8 +147,6 @@ class SettingsMenu:
         
         for slider in self.sliders:
             slider.handle_event(event)
-        
-        self.color_selector.handle_event(event)
 
         # Read slider values AFTER handling events
         self.sim_speed = max(0.5, self.speed_slider.val)

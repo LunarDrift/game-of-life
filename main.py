@@ -125,82 +125,58 @@ class LifeGame:
 
 
     def _handle_scrollwheel(self, event):
-        """Handle scroll wheel events for all sliders and zoom consistently."""
+        """Handle mouse wheel events for sliders and zoom."""
         if event.type != pygame.MOUSEWHEEL:
             return
         
         mouse_pos = pygame.mouse.get_pos()
+        settings = self.settings
+        target_slider = None
 
-        # Menu open -> check if over sliders
-        if self.settings.open:
-            for target in self.scroll_targets:
-                if target["rect"].collidepoint(mouse_pos):
-                    self._apply_scroll(target, event)
-                    return
-            
-            # Not over any slider -> zoom if over grid
-            if not self.settings.panel_rect.collidepoint(mouse_pos):
-                zoom_target = next(
-                    t for t in self.scroll_targets if t["attr"] == "zoom"
+        # If settings panel is open, check if mouse is over a slider
+        if settings.open:
+            for slider_setting in settings.sliders:
+                if slider_setting.slider.rect.collidepoint(mouse_pos):
+                    target_slider = slider_setting
+                    break
+
+            # If not over any slider, and mouse over grid: scroll to zoom
+            if not target_slider and not settings.panel_rect.collidepoint(mouse_pos):
+                target_slider = next(
+                    s for s in settings.sliders if "zoom" in s.label.lower()
                 )
-                self._apply_scroll(zoom_target, event)
-                return
-        
-        # Menu closed -> always zoom
+
+        # Panel is closed, always scroll to zoom
         else:
-            zoom_target = next(
-                t for t in self.scroll_targets if t["attr"] == "zoom"
+            target_slider = next(
+                s for s in settings.sliders if "zoom" in s.label.lower()
             )
-            self._apply_scroll(zoom_target, event)
 
+        # Apply scroll to the target slider
+        if target_slider:
+            step = target_slider.step
+            delta = step if event.y > 0 else -step
+            slider = target_slider.slider
+            new_val = slider.val + delta
 
-    def _apply_scroll(self, target, event):
-        """Apply scroll delta to the slider, respecting inversion,
-        and update the corresponding setting value."""
+            # Clamp value within slider min/max
+            new_val = max(slider.min_val, min(slider.max_val, new_val))
+            slider.set_val(new_val)
 
-        slider = target["sync_slider"]
-        step = target["step"]
+            # Update corresponding setting in settings
+            if getattr(target_slider, "invert", False):
+                value = slider.max_val - (new_val - slider.min_val)
+            else:
+                value = new_val
 
-        # Determine scroll direction
-        delta = step if event.y > 0 else -step
-
-        # Update slider value within min/max bounds
-        new_val = max(
-            slider.min_val, min(slider.max_val, slider.val + delta)
-        )
-        slider.set_val(new_val)
-
-        # Compute the actual setting value based on slider
-        if target.get("invert", False):
-            # Inverted
-            value = slider.max_val - (new_val - target["min"])
-        else:
-            value = new_val
-
-        # Update the settings attribute
-        setattr(self.settings, target["attr"], value)
-
-
-    def _adjust_speed(self, event):
-        """Adjust simulation speed based on scroll wheel input."""
-        delta = 1 if event.y > 0 else -1
-
-        new_speed = self.settings.speed_slider.val + delta
-        new_speed = max(
-            self.settings.speed_slider.min_val,
-            min(self.settings.speed_slider.max_val, new_speed)
-        )
-
-        self.settings.speed_slider.set_val(new_speed)
-
-    
-    def _adjust_population(self, event):
-        delta = 1 if event.y > 0 else -1
-
-        new_pop = self.settings.initial_population_slider.val + delta
-        new_pop = max(0, min(100, new_pop))
-
-        self.settings.initial_population_slider.set_val(new_pop)
+            # Map slider base_label to actual settings attribute
+            label_lower = target_slider.label.lower()
+            if "zoom" in label_lower:
+                settings.zoom = value
+            elif "speed" in label_lower:
+                settings.sim_speed = value
+            elif "population" in label_lower:
+                settings.initial_cells = value
 
 
     def _reset_cells(self, grid_width, grid_height):

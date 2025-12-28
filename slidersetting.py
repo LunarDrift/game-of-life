@@ -2,12 +2,11 @@ import pygame
 from constants import WHITE
 
 class SliderSetting:
-    def __init__(self, label, slider, panel_rect=None, invert=False):
+    def __init__(self, label, slider, panel_rect=None, step=1):
         self.label = label
         self.slider = slider
         self.panel_rect = panel_rect
-        self.invert = invert
-
+        self.step = step
         self.font = pygame.font.SysFont("ubuntumono", 13)
 
     
@@ -17,11 +16,7 @@ class SliderSetting:
 
 
     def get_value(self):
-        # Return slider value, applying inversion if needed
-        val = self.slider.val
-        if self.invert:
-            val = self.slider.max_val - (val - self.slider.min_val)
-        return val
+        return self.slider.val
     
 
     def draw(self, screen):
