@@ -128,25 +128,23 @@ class LifeGame:
         """Handle mouse wheel events for sliders and zoom."""
         if event.type != pygame.MOUSEWHEEL:
             return
-        
+
         mouse_pos = pygame.mouse.get_pos()
         settings = self.settings
         target_slider = None
 
-        # If settings panel is open, check if mouse is over a slider
         if settings.open:
             for slider_setting in settings.sliders:
                 if slider_setting.slider.rect.collidepoint(mouse_pos):
                     target_slider = slider_setting
                     break
 
-            # If not over any slider, and mouse over grid: scroll to zoom
+            # Still want zoom functionality when menu is open, if mouse not in panel  
             if not target_slider and not settings.panel_rect.collidepoint(mouse_pos):
                 target_slider = next(
                     s for s in settings.sliders if "zoom" in s.label.lower()
                 )
 
-        # Panel is closed, always scroll to zoom
         else:
             target_slider = next(
                 s for s in settings.sliders if "zoom" in s.label.lower()
@@ -218,7 +216,8 @@ class LifeGame:
             self._handle_scrollwheel(event)
             self.controls.handle_event(event)
             self._handle_keyboard(event)
-            self.color_selector.handle_event(event)
+            if self.settings.open:
+                self.color_selector.handle_event(event)
         
         return True    
 

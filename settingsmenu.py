@@ -45,7 +45,11 @@ class SettingsMenu:
         # Create sliders list
         self.sliders = [
             SliderSetting(
-                "Simulation Speed", self.speed_slider, self.panel_rect, step=5
+                "Simulation Speed",
+                self.speed_slider,
+                self.panel_rect,
+                step=5,
+                display_value_fn=lambda val: max(1, round(val / 10))
             ),
             SliderSetting(
                 "Zoom Level", self.zoom_slider, self.panel_rect
