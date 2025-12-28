@@ -84,7 +84,9 @@ This project is intentionally **iterative and experimental**.
 
 Instead of following a strict tutorial, features are added based on questions like:
 >What if I add this?
+
 >How would I make this feel better to use?
+
 >Where does this logic actually belong?
 
 Refactoring has been an expected and encouraged part of the process.
