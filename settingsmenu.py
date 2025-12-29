@@ -2,6 +2,7 @@ import pygame
 from slider import SimpleSlider
 from slidersetting import SliderSetting
 from colorselector import ColorSelector
+from togglebutton import ToggleButton
 from constants import (
     RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN, BUTTON_LABEL_COLOR,
     BUTTON_COLOR, PANEL_COLOR, PANEL_BORDER_COLOR
@@ -31,8 +32,18 @@ class SettingsMenu:
         self.max_update_freq = 100
 
         self.initial_cells = 15
-        self.cell_fade = 0.1
         self.show_grid = False
+        
+        # -------------------------------------------------
+        # Cell fade button
+        # -------------------------------------------------
+        self.fade_toggle = ToggleButton(
+            pygame.Rect(15, 150, 160, 20),
+            "Cell Fade",
+            value=False,
+            font=self.font
+        )
+        self.fade_enabled = False
 
         # -------------------------------------------------
         # Sliders
@@ -42,7 +53,7 @@ class SettingsMenu:
         SLIDER_H = 13
         SLIDER_SPACING = 35
 
-        y = 58  # OR TRY 40? FROM GPT
+        y = 58
 
         self.speed_slider = SimpleSlider(
             SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
@@ -59,12 +70,6 @@ class SettingsMenu:
             SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
             0, 100, start_val=15
         )
-        y += SLIDER_SPACING
-        self.fade_slider = SimpleSlider(
-            SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
-            0, 100, start_val=0
-        )
-        y += SLIDER_SPACING
 
         # -------------------------------------------------
         # Slider configurations for easier management
@@ -77,8 +82,11 @@ class SettingsMenu:
                 "display_value_fn": lambda val: max(1, round(val / 2))
             },
             {"label": "Zoom Level", "slider": self.zoom_slider},
-            {"label": "Cell Population", "slider": self.initial_population_slider, "step": 5},
-            {"label": "Cell Fade", "slider": self.fade_slider, "step": 1}
+            {
+                "label": "Cell Population",
+                "slider": self.initial_population_slider,
+                "step": 5
+            }, 
         ]
 
         # -------------------------------------------------
@@ -92,7 +100,7 @@ class SettingsMenu:
         BUTTON_SIZE = 20
         BUTTON_SPACING = 3
 
-        color_y = y
+        color_y = self.panel_rect.bottom - BUTTON_SIZE * 2 - 7
         top_row = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN]
         bottom_row = [
             "darkcyan", "darkslategray", "indigo", "lightseagreen",
@@ -107,7 +115,7 @@ class SettingsMenu:
                 (pygame.Rect(x, color_y, BUTTON_SIZE, BUTTON_SIZE), color)
             )
 
-        color_y += BUTTON_SIZE + BUTTON_SPACING
+        color_y = self.panel_rect.bottom - BUTTON_SIZE - 5
 
         for i, color in enumerate(bottom_row):
             x = 15 + i * (BUTTON_SIZE + BUTTON_SPACING)
@@ -189,6 +197,9 @@ class SettingsMenu:
         if not self.open:
             return
         
+        self.fade_toggle.handle_event(event)
+        self.fade_enabled = self.fade_toggle.value
+
         for slider in self.sliders:
             slider.handle_event(event)
 
@@ -196,7 +207,6 @@ class SettingsMenu:
         self.sim_speed = max(0.5, self.speed_slider.val)
         self.zoom = round(self.zoom_slider.val)
         self.initial_cells = round(self.initial_population_slider.val)
-        self.cell_fade = self.fade_slider.val / 100.0
 
         # Close menu if clicking outside panel
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -233,3 +243,6 @@ class SettingsMenu:
         for slider in self.sliders:
             slider.draw(screen)
         self.color_selector.draw(screen, self.panel_rect)
+
+        # Draw Cell fade toggle button
+        self.fade_toggle.draw(screen)

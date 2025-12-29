@@ -7,13 +7,13 @@ class LifeView:
         self.screen = screen
         self.zoom = zoom
         self.cell_alpha = {}    # {(col, row): alpha}
-        self.fade_speed = 0.1   # per frame decay
+        self.fade_speed = 0.02   # per frame decay
         self.birth_alpha = 1.0  # alpha when cell becomes alive
+        self.fade_enabled = False
 
     
-    def update_zoom(self, zoom):
-        """Update zoom level dynamically."""
-        self.zoom = zoom
+    def set_fade_enabled(self, enabled: bool):
+        self.fade_enabled = enabled
 
 
     def update_fade(self, alive_cells):
@@ -47,6 +47,12 @@ class LifeView:
         color: RGB tuple
         """
         for pos, alpha in self.cell_alpha.items():
+
+            # If fade disabled, only draw living cells
+            if not self.fade_enabled and pos not in alive_cells:
+                continue
+
+
             col, row = pos
             rect = pygame.Rect(
                 col * self.zoom,
@@ -55,14 +61,17 @@ class LifeView:
                 self.zoom
             )
 
-            # Blend color with background based on alpha
             fade_color = (
                 int(color[0] * alpha + GRAY[0] * (1 - alpha)),
                 int(color[1] * alpha + GRAY[1] * (1 - alpha)),
                 int(color[2] * alpha + GRAY[2] * (1 - alpha)),
             )
 
-            pygame.draw.rect(self.screen, fade_color, rect)
+            pygame.draw.rect(
+                self.screen,
+                fade_color if self.fade_enabled else color,
+                rect
+            )
 
 
     def draw_grid(self, width, height, color, show=False):
