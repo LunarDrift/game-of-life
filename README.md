@@ -99,6 +99,8 @@ Refactoring has been an expected and encouraged part of the process.
 
 ## Known Rough Edges / TODO
 
+### NOTE: This project grew organically. Some systems could be simplified if revisited.
+
 - SettingsMenu cleanup and refactoring
 - Reduce complexity in event handling
 - Improve slider architecture
