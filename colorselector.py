@@ -29,7 +29,7 @@ class ColorSelector:
         color_label_rect = color_label_surface.get_rect(
             centerx=panel_rect.centerx
         )
-        color_label_rect.bottom = 225
+        color_label_rect.bottom = 230
         screen.blit(color_label_surface, color_label_rect)
 
         # Draw label "Cell Colors"

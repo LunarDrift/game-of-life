@@ -17,7 +17,7 @@ class SettingsMenu:
         # Panel + button
         # -------------------------------------------------
         self.button_rect = pygame.Rect(5, 5, 80, 20)
-        self.panel_rect = pygame.Rect(5, 26, 178, 250)
+        self.panel_rect = pygame.Rect(5, 26, 178, 255)
         self.font = pygame.font.SysFont("ubuntumono", 13)
 
         # -------------------------------------------------
@@ -42,7 +42,7 @@ class SettingsMenu:
         # Cell fade button
         # -------------------------------------------------
         self.fade_toggle = ToggleButton(
-            pygame.Rect(15, 150, 160, 20),
+            pygame.Rect(15, 147, 160, 20),
             "Cell Fade",
             value=False,
             font=self.font
@@ -73,7 +73,7 @@ class SettingsMenu:
             SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
             0, 100, start_val=15
         )
-        y += SLIDER_SPACING + 40 # Extra spacing to go below toggle button
+        y += SLIDER_SPACING + 35 # Extra spacing to go below toggle button
         self.fade_slider = SimpleSlider(
             SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
             self.min_fade_duration,
@@ -145,6 +145,32 @@ class SettingsMenu:
 
 ############################## HELPERS ##############################
 # Internal methods for drawing menu components and updating settings
+
+    def _draw_soft_separator(self, screen, y):
+        pygame.draw.line(
+            screen,
+            (200, 200, 200, 40),
+            (self.panel_rect.left + 10, y),
+            (self.panel_rect.right - 10, y)
+        )
+        pygame.draw.line(
+            screen,
+            (40, 40, 40, 80),
+            (self.panel_rect.left + 10, y + 1),
+            (self.panel_rect.right - 10, y +1)
+        )
+
+
+    def _draw_separator(self, screen, y, padding=10, color=(0,0,0), alpha=80):
+        line_surf = pygame.Surface(
+            (self.panel_rect.width - padding * 2, 1),
+            pygame.SRCALPHA
+        )
+        line_surf.fill((*color, alpha))
+        screen.blit(
+            line_surf, (self.panel_rect.left + padding, y)
+        )
+
 
     def _make_slider(self, label, slider, step=1, display_value_fn=None):
         return SliderSetting(
@@ -260,7 +286,15 @@ class SettingsMenu:
         self._draw_panel(screen)
         for slider in self.sliders:
             slider.draw(screen)
-        self.color_selector.draw(screen, self.panel_rect)
+        
+        # self._draw_separator(screen, y=140)
+        self._draw_soft_separator(screen, 140)
 
         # Draw Cell fade toggle button
         self.fade_toggle.draw(screen)
+
+        # self._draw_separator(screen, y=211)
+        self._draw_soft_separator(screen, 211)
+
+
+        self.color_selector.draw(screen, self.panel_rect)
