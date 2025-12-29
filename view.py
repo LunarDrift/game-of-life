@@ -6,38 +6,40 @@ class LifeView:
     def __init__(self, screen, zoom):
         self.screen = screen
         self.zoom = zoom
-        self.cell_alpha = {}    # {(col, row): alpha}
-        self.fade_speed = 0.02   # per frame decay
-        self.birth_alpha = 1.0  # alpha when cell becomes alive
+        self.cell_fade = {}    # {(col, row): remaining_time}
+        self.fade_duration = 0.5   # seconds
         self.fade_enabled = False
+        self.prev_alive_cells = set()
 
     
     def set_fade_enabled(self, enabled: bool):
         self.fade_enabled = enabled
 
 
-    def update_fade(self, alive_cells):
+    def update_fade(self, alive_cells, dt):
         """
         Update alpha for fading cells.
         alive_cells: set of currently alive positions {(col, row), ...}
         """
-        # Fade out dead cells
-        to_remove = []
-        for pos, alpha in self.cell_alpha.items():
-            if pos not in alive_cells:
-                alpha -= self.fade_speed
-                if alpha <= 0:
-                    to_remove.append(pos)
-                else:
-                    self.cell_alpha[pos] = alpha
+        if not self.fade_enabled:
+            self.cell_fade.clear()
 
-        for pos in to_remove:
-            del self.cell_alpha[pos]
+        # Add newly dead cells to fade map
+        for pos in list(self.cell_fade.keys()):
+            self.cell_fade[pos] -= dt
+            if self.cell_fade[pos] <= 0:
+                del self.cell_fade[pos]
+
+        # Detect deaths (cells that were alive last frame but aren't now)
+        for pos in self.prev_alive_cells - alive_cells:
+            self.cell_fade[pos] = self.fade_duration
+
+        self.prev_alive_cells = set(alive_cells)
 
         # Set new alpha for live cells
         for pos in alive_cells:
             # Snap new births to full alpha
-            self.cell_alpha[pos] = self.birth_alpha
+            self.cell_fade[pos] = self.fade_duration
 
 
     def draw_cells(self, alive_cells, color):
@@ -46,9 +48,7 @@ class LifeView:
         alive_cells: set of positions
         color: RGB tuple
         """
-        for pos, alpha in self.cell_alpha.items():
-
-            # If fade disabled, only draw living cells
+        for pos, remaining in self.cell_fade.items():
             if not self.fade_enabled and pos not in alive_cells:
                 continue
 
@@ -59,6 +59,8 @@ class LifeView:
                 self.zoom,
                 self.zoom
             )
+
+            alpha = min(1.0, remaining / self.fade_duration)
 
             fade_color = (
                 int(color[0] * alpha + GRAY[0] * (1 - alpha)),

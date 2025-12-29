@@ -227,7 +227,7 @@ class LifeGame:
 ############################## UPDATE ##############################
 # Update simulation state and settings based on events
 
-    def update_simulation(self):
+    def update_simulation(self, dt):
         self.simulation.update_grid_size(
             WIDTH,
             HEIGHT,
@@ -235,7 +235,7 @@ class LifeGame:
         )
 
         self.update_simulation_settings()
-        self.view.update_fade(self.simulation.positions)
+        self.view.update_fade(self.simulation.positions, dt)
 
         # Step the simulation while playing
         if self.playing:
@@ -251,6 +251,9 @@ class LifeGame:
         if self.prev_zoom != self.settings.zoom:
             self.view.zoom = self.settings.zoom
             self.simulation.update_grid_size(WIDTH, HEIGHT, self.settings.zoom)
+            # Clear visual caches that depend on zoom
+            self.view.cell_fade.clear()
+
             self.prev_zoom = self.settings.zoom
 
         if self.prev_show_grid != self.settings.show_grid:
@@ -303,10 +306,10 @@ class LifeGame:
         self.count = 0
 
         while running:
-            self.clock.tick(FPS)
+            dt = self.clock.tick(FPS) / 1000.0
             running = self.handle_events()
             self._handle_mouse()
-            self.update_simulation()
+            self.update_simulation(dt)
             self.draw()
 
         pygame.quit()
