@@ -218,6 +218,12 @@ class LifeGame:
             # Update previous value in the dict
             self.prev_settings[attr_name] = current_value
 
+
+    def _apply_zoom(self, zoom_value):
+        self.view.zoom = zoom_value
+        self.simulation.update_grid_size(WIDTH, HEIGHT, zoom_value)
+        self.view.cell_fade.clear()
+
 ############################## END HELPER METHODS ##############################
 
 ############################## EVENTS ##############################
@@ -244,12 +250,8 @@ class LifeGame:
 # Update simulation state and settings based on events
 
     def update_simulation(self, dt):
-        self.simulation.update_grid_size(
-            WIDTH,
-            HEIGHT,
-            self.settings.zoom
-        )
-
+        """Update simulation state and view based on current settings."""
+        
         self.update_simulation_settings()
         self.view.update_fade(self.simulation.positions, dt)
 
@@ -266,11 +268,7 @@ class LifeGame:
         # Update dependent settings in simulation if they have changed
         self._sync_setting(
             "zoom",
-            apply_fn=lambda v: (
-                setattr(self.view, "zoom", v),
-                self.simulation.update_grid_size(WIDTH, HEIGHT, v),
-                self.view.cell_fade.clear()
-            )
+            apply_fn=self._apply_zoom
         )
 
         self._sync_setting("show_grid")

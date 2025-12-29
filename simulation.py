@@ -77,5 +77,12 @@ class LifeSimulation:
     
 
     def update_grid_size(self, width, height, tile_size):
+        """
+        Update the grid size based on screen dimensions and tile size.
+        
+        :param width: screen width in pixels
+        :param height: screen height in pixels
+        :param tile_size: size of each cell in pixels (zoom level)
+        """
         self.width = width // tile_size
         self.height = height // tile_size
