@@ -35,6 +35,7 @@ class LifeGame:
         self.prev_sim_speed = self.settings.sim_speed
         self.prev_cell_color = self.color_selector.selected_color
         self.prev_fade_enabled = self.settings.fade_enabled
+        self.prev_fade_duration = self.settings.fade_duration
 
         # Scroll wheel targets for adjusting settings
         self.scroll_targets = [
@@ -271,6 +272,10 @@ class LifeGame:
         if self.prev_fade_enabled != self.settings.fade_enabled:
             self.view.set_fade_enabled(self.settings.fade_enabled)
             self.prev_fade_enabled = self.settings.fade_enabled
+
+        if self.prev_fade_duration != self.settings.fade_duration:
+            self.view.fade_duration = self.settings.fade_duration
+            self.prev_fade_duration = self.settings.fade_duration
 
 ############################## END UPDATE ##############################
 

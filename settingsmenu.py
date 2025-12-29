@@ -17,7 +17,7 @@ class SettingsMenu:
         # Panel + button
         # -------------------------------------------------
         self.button_rect = pygame.Rect(5, 5, 80, 20)
-        self.panel_rect = pygame.Rect(5, 26, 178, 230)
+        self.panel_rect = pygame.Rect(5, 26, 178, 250)
         self.font = pygame.font.SysFont("ubuntumono", 13)
 
         # -------------------------------------------------
@@ -33,6 +33,10 @@ class SettingsMenu:
 
         self.initial_cells = 15
         self.show_grid = False
+
+        self.fade_duration = 0.5
+        self.min_fade_duration = 0.1
+        self.max_fade_duration = 2.0
         
         # -------------------------------------------------
         # Cell fade button
@@ -52,8 +56,7 @@ class SettingsMenu:
         SLIDER_WIDTH = 160
         SLIDER_H = 13
         SLIDER_SPACING = 35
-
-        y = 58
+        y = 50
 
         self.speed_slider = SimpleSlider(
             SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
@@ -70,6 +73,14 @@ class SettingsMenu:
             SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
             0, 100, start_val=15
         )
+        y += SLIDER_SPACING + 40 # Extra spacing to go below toggle button
+        self.fade_slider = SimpleSlider(
+            SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
+            self.min_fade_duration,
+            self.max_fade_duration,
+            start_val=self.fade_duration
+        )
+        y+= SLIDER_SPACING
 
         # -------------------------------------------------
         # Slider configurations for easier management
@@ -87,6 +98,12 @@ class SettingsMenu:
                 "slider": self.initial_population_slider,
                 "step": 5
             }, 
+            {
+                "label": "Fade Time (s)",
+                "slider": self.fade_slider,
+                "step": 0.05,
+                "display_value_fn": lambda v: f"{v:.2f}"
+            },
         ]
 
         # -------------------------------------------------
@@ -207,6 +224,7 @@ class SettingsMenu:
         self.sim_speed = max(0.5, self.speed_slider.val)
         self.zoom = round(self.zoom_slider.val)
         self.initial_cells = round(self.initial_population_slider.val)
+        self.fade_duration = round(self.fade_slider.val, 2)
 
         # Close menu if clicking outside panel
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:

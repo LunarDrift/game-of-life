@@ -7,9 +7,10 @@ class LifeView:
         self.screen = screen
         self.zoom = zoom
         self.cell_fade = {}    # {(col, row): remaining_time}
-        self.fade_duration = 0.5   # seconds
+
         self.fade_enabled = False
         self.prev_alive_cells = set()
+        self.fade_duration = 0.5   # seconds
 
     
     def set_fade_enabled(self, enabled: bool):
