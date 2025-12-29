@@ -2,7 +2,7 @@
 
 A work-in-progress implementation of **Conway’s Game of Life**, built in Python using **Pygame-ce**.
 
-![Conway](ex/Conway.gif)
+![Conway](ex/conway.gif)
 
 
 This project started as a relatively simple simulation, based on a [tutorial by Tech With Tim](https://www.youtube.com/watch?v=YDKuknw9WGs), but has grown into an exploration of:
@@ -25,11 +25,13 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 - Pause / resume simulation
 - Clear grid
 - Randomized starting population
+- Cell fade-out on death (inspired by optical illusion that made it seem like they were fading away)
 
 ### Settings Menu
 - **Zoom level** (grid cell size)
 - **Simulation speed**
 - **Initial population percentage**
+- **Cell fade speed**
 - Toggle grid visibility
 - Mouse wheel support for adjusting sliders
 
@@ -54,6 +56,7 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 | Clear grid | `C` |
 | Randomize cells | `R` |
 | Toggle grid | `G` |
+| Toggle cell fade | `F` |
 | Draw cells | Left mouse button |
 | Erase cells | Right mouse button |
 | Zoom | Mouse wheel |
@@ -64,8 +67,9 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 ## Project Structure
 
 ```
-├── main.py                # Main game loop and event handling  
+├── main.py                # Entrypoint to the simulation 
 ├── simulation.py          # Game of Life logic  
+├── lifegame.py            # Main game loop and event handling
 ├── view.py                # Rendering logic  
 ├── settingsmenu.py        # Settings UI and sliders  
 ├── controlsmenu.py        # Controls / help menu  
@@ -98,7 +102,7 @@ Refactoring has been an expected and encouraged part of the process.
 - SettingsMenu cleanup and refactoring
 - Reduce complexity in event handling
 - Improve slider architecture
-- Visual polish (transitions, fading cells, etc.)
+- Visual polish
 - Possible performance optimizations for large grids
 
 ---
