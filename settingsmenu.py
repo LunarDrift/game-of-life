@@ -3,7 +3,7 @@ from slider import SimpleSlider
 from slidersetting import SliderSetting
 from colorselector import ColorSelector
 from constants import (
-    WHITE, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN, BUTTON_LABEL_COLOR,
+    RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN, BUTTON_LABEL_COLOR,
     BUTTON_COLOR, PANEL_COLOR, PANEL_BORDER_COLOR
 )
 
@@ -11,27 +11,64 @@ class SettingsMenu:
     def __init__(self):
         self.open = True
         self.clicked = False
+
+        # -------------------------------------------------
+        # Panel + button
+        # -------------------------------------------------
         self.button_rect = pygame.Rect(5, 5, 80, 20)
-        self.panel_rect = pygame.Rect(5, 26, 178, 200)
+        self.panel_rect = pygame.Rect(5, 26, 178, 230)
         self.font = pygame.font.SysFont("ubuntumono", 13)
 
-         # User-adjustable settings
+        # -------------------------------------------------
+        # User-adjustable settings
+        # -------------------------------------------------
         self.zoom = 10
         self.min_zoom = 5
         self.max_zoom = 20
-        self.initial_cells = 50
+
         self.sim_speed = 30
         self.min_update_freq = 1
         self.max_update_freq = 100
+
+        self.initial_cells = 15
+        self.cell_fade = 0.1
         self.show_grid = False
 
-        # Create slider instances
-        self.speed_slider = SimpleSlider(15, 58, 160, 13, self.min_update_freq, self.max_update_freq)
-        self.zoom_slider = SimpleSlider(15, 93, 160, 13, self.min_zoom, self.max_zoom)
-        self.initial_population_slider = SimpleSlider(15, 128, 160, 13, 0, 100, start_val=15)
-        #self.fade_slider = SimpleSlider(15, 163, 160, 13, 0, 10, start_val=5)
+        # -------------------------------------------------
+        # Sliders
+        # -------------------------------------------------
+        SLIDER_X = 15
+        SLIDER_WIDTH = 160
+        SLIDER_H = 13
+        SLIDER_SPACING = 35
 
-        # Slider configurations
+        y = 58  # OR TRY 40? FROM GPT
+
+        self.speed_slider = SimpleSlider(
+            SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
+            self.min_update_freq, self.max_update_freq
+        )
+        y += SLIDER_SPACING
+
+        self.zoom_slider = SimpleSlider(
+            SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
+            self.min_zoom, self.max_zoom
+        )
+        y += SLIDER_SPACING
+        self.initial_population_slider = SimpleSlider(
+            SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
+            0, 100, start_val=15
+        )
+        y += SLIDER_SPACING
+        self.fade_slider = SimpleSlider(
+            SLIDER_X, y, SLIDER_WIDTH, SLIDER_H,
+            0, 100, start_val=0
+        )
+        y += SLIDER_SPACING
+
+        # -------------------------------------------------
+        # Slider configurations for easier management
+        # -------------------------------------------------
         slider_configs = [
             {
                 "label": "Simulation Speed",
@@ -41,38 +78,41 @@ class SettingsMenu:
             },
             {"label": "Zoom Level", "slider": self.zoom_slider},
             {"label": "Cell Population", "slider": self.initial_population_slider, "step": 5},
-            #{"label": "Cell Fade", "slider": self.fade_slider, "step": 1}
+            {"label": "Cell Fade", "slider": self.fade_slider, "step": 1}
         ]
 
-        # Create sliders list
-        self.sliders = [
-            self._make_slider(
-                "Simulation Speed",
-                self.speed_slider,
-                step=5,
-                display_fn=lambda val: max(1, round(val / 2))
-            ),
-            self._make_slider("Zoom Level", self.zoom_slider),
-            self._make_slider(
-                "Cell Population", self.initial_population_slider, step= 5
-            ),
-        ]
+        # -------------------------------------------------
+        # Create SliderSetting instances
+        # -------------------------------------------------
+        self.sliders = [self._make_slider(**config) for config in slider_configs]
 
+        # -------------------------------------------------
         # Color buttons
+        # -------------------------------------------------
+        BUTTON_SIZE = 20
+        BUTTON_SPACING = 3
+
+        color_y = y
         top_row = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN]
         bottom_row = [
             "darkcyan", "darkslategray", "indigo", "lightseagreen",
             "steelblue", "thistle", "tan"
         ]
+        bottom_row = [pygame.Color(c) for c in bottom_row]
 
         self.color_buttons = []
         for i, color in enumerate(top_row):
-            x = 15 + i * 23    #23 pixel spacing
-            self.color_buttons.append((pygame.Rect(x, 163, 20, 20), color))
-        for i, color_name in enumerate(bottom_row):
-            x = 15 + i * 23
+            x = 15 + i * (BUTTON_SIZE + BUTTON_SPACING)
             self.color_buttons.append(
-                (pygame.Rect(x, 188, 20, 20), pygame.Color(color_name))
+                (pygame.Rect(x, color_y, BUTTON_SIZE, BUTTON_SIZE), color)
+            )
+
+        color_y += BUTTON_SIZE + BUTTON_SPACING
+
+        for i, color in enumerate(bottom_row):
+            x = 15 + i * (BUTTON_SIZE + BUTTON_SPACING)
+            self.color_buttons.append(
+                (pygame.Rect(x, color_y, BUTTON_SIZE, BUTTON_SIZE), color)
             )
        
         self.color_selector = ColorSelector(self.color_buttons, self.font)
@@ -81,8 +121,14 @@ class SettingsMenu:
 ############################## HELPERS ##############################
 # Internal methods for drawing menu components and updating settings
 
-    def _make_slider(self, label, slider, step=1, display_fn=None):
-        return SliderSetting(label, slider, self.panel_rect, step=step, display_value_fn=display_fn)
+    def _make_slider(self, label, slider, step=1, display_value_fn=None):
+        return SliderSetting(
+            label,
+            slider,
+            self.panel_rect,
+            step=step,
+            display_value_fn=display_value_fn
+        )
 
 
     def _draw_button(self, screen, rect, label=None, label_color=(0, 0, 0), color=(0, 0, 0, 180)):
@@ -150,6 +196,7 @@ class SettingsMenu:
         self.sim_speed = max(0.5, self.speed_slider.val)
         self.zoom = round(self.zoom_slider.val)
         self.initial_cells = round(self.initial_population_slider.val)
+        self.cell_fade = self.fade_slider.val / 100.0
 
         # Close menu if clicking outside panel
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
