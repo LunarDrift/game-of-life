@@ -203,6 +203,18 @@ class LifeGame:
             return False
         return True
 
+    
+    def _sync_setting(self, attr_name, prev_attr_name, apply_fn=None, getter=None):
+        """Sync a setting from self.settings to the game/view, only if it changed."""
+        # Use getter for color selection, otherwise default to self.settings       
+        current_value = getter() if getter else getattr(self.settings, attr_name)
+        prev_value = getattr(self, prev_attr_name)
+
+        if current_value != prev_value:
+            if apply_fn:
+                apply_fn(current_value)
+            setattr(self, prev_attr_name, current_value)
+
 ############################## END HELPER METHODS ##############################
 
 ############################## EVENTS ##############################
@@ -249,33 +261,27 @@ class LifeGame:
 
     def update_simulation_settings(self):
         # Update dependent settings in simulation if they have changed
-        if self.prev_zoom != self.settings.zoom:
-            self.view.zoom = self.settings.zoom
-            self.simulation.update_grid_size(WIDTH, HEIGHT, self.settings.zoom)
-            # Clear visual caches that depend on zoom
+        self._sync_setting(
+            "zoom", "prev_zoom",
+            lambda v: (setattr(self.view, "zoom", v),
+            self.simulation.update_grid_size(WIDTH, HEIGHT, v),
             self.view.cell_fade.clear()
+        ))
 
-            self.prev_zoom = self.settings.zoom
-
-        if self.prev_show_grid != self.settings.show_grid:
-            # If something depends on show_grid, update it here
-            self.prev_show_grid = self.settings.show_grid
-
-        if self.prev_sim_speed != self.settings.sim_speed:
-            # If we use sim_speed elsewhere, we can update it here
-            self.prev_sim_speed = self.settings.sim_speed
-
-        if self.prev_cell_color != self.color_selector.selected_color:
-            # If something depends on cell_color, update it here
-            self.prev_cell_color = self.color_selector.selected_color
-
-        if self.prev_fade_enabled != self.settings.fade_enabled:
-            self.view.set_fade_enabled(self.settings.fade_enabled)
-            self.prev_fade_enabled = self.settings.fade_enabled
-
-        if self.prev_fade_duration != self.settings.fade_duration:
-            self.view.fade_duration = self.settings.fade_duration
-            self.prev_fade_duration = self.settings.fade_duration
+        self._sync_setting("show_grid", "prev_show_grid")
+        self._sync_setting("sim_speed", "prev_sim_speed")
+        self._sync_setting(
+            "fade_enabled", "prev_fade_enabled", self.view.set_fade_enabled
+        )
+        self._sync_setting(
+            "fade_duration", "prev_fade_duration",
+            lambda v: setattr(self.view, "fade_duration", v)
+        )
+        self._sync_setting(
+            "cell_color", "prev_cell_color",
+            apply_fn=lambda v: setattr(self.color_selector, "selected_color", v),
+            getter=lambda: self.color_selector.selected_color
+        )
 
 ############################## END UPDATE ##############################
 
