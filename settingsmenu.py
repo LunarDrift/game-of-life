@@ -26,64 +26,64 @@ class SettingsMenu:
         self.show_grid = False
 
         # Create slider instances
-        self.speed_slider = SimpleSlider(
-            15, 58, 160, 13,
-            self.min_update_freq, self.max_update_freq
-        )
+        self.speed_slider = SimpleSlider(15, 58, 160, 13, self.min_update_freq, self.max_update_freq)
+        self.zoom_slider = SimpleSlider(15, 93, 160, 13, self.min_zoom, self.max_zoom)
+        self.initial_population_slider = SimpleSlider(15, 128, 160, 13, 0, 100, start_val=15)
+        #self.fade_slider = SimpleSlider(15, 163, 160, 13, 0, 10, start_val=5)
 
-        self.zoom_slider = SimpleSlider(
-            15, 93, 160, 13,
-            self.min_zoom, self.max_zoom
-        )
-
-        self.initial_population_slider = SimpleSlider(
-            15, 128, 160, 13,
-            0, 100,
-            start_val=15    # Start at 15%
-        )
+        # Slider configurations
+        slider_configs = [
+            {
+                "label": "Simulation Speed",
+                "slider": self.speed_slider,
+                "step": 5,
+                "display_value_fn": lambda val: max(1, round(val / 2))
+            },
+            {"label": "Zoom Level", "slider": self.zoom_slider},
+            {"label": "Cell Population", "slider": self.initial_population_slider, "step": 5},
+            #{"label": "Cell Fade", "slider": self.fade_slider, "step": 1}
+        ]
 
         # Create sliders list
         self.sliders = [
-            SliderSetting(
+            self._make_slider(
                 "Simulation Speed",
                 self.speed_slider,
-                self.panel_rect,
                 step=5,
-                display_value_fn=lambda val: max(1, round(val / 2))
+                display_fn=lambda val: max(1, round(val / 2))
             ),
-            SliderSetting(
-                "Zoom Level", self.zoom_slider, self.panel_rect
-            ),
-            SliderSetting(
-                "Cell Population", self.initial_population_slider, self.panel_rect, step=5
+            self._make_slider("Zoom Level", self.zoom_slider),
+            self._make_slider(
+                "Cell Population", self.initial_population_slider, step= 5
             ),
         ]
 
-        # Color button rects L, T, W, H
-        self.color_buttons = [
-        # Top row
-            (pygame.Rect(15, 163, 20, 20), RED),
-            (pygame.Rect(38, 163, 20, 20), ORANGE),
-            (pygame.Rect(61, 163, 20, 20), YELLOW),
-            (pygame.Rect(84, 163, 20, 20), GREEN),
-            (pygame.Rect(107, 163, 20, 20), BLUE),
-            (pygame.Rect(130, 163, 20, 20), PURPLE),
-            (pygame.Rect(153, 163, 20, 20), CYAN),
-            # Bottom row
-            (pygame.Rect(15, 188, 20, 20), "darkcyan"),
-            (pygame.Rect(38, 188, 20, 20), "darkslategray"),
-            (pygame.Rect(61, 188, 20, 20), "indigo"),
-            (pygame.Rect(84, 188, 20, 20), "lightseagreen"),
-            (pygame.Rect(107, 188, 20, 20), "steelblue"),
-            (pygame.Rect(130, 188, 20, 20), "thistle"),
-            (pygame.Rect(153, 188, 20, 20), "tan"),
+        # Color buttons
+        top_row = [RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, CYAN]
+        bottom_row = [
+            "darkcyan", "darkslategray", "indigo", "lightseagreen",
+            "steelblue", "thistle", "tan"
         ]
 
+        self.color_buttons = []
+        for i, color in enumerate(top_row):
+            x = 15 + i * 23    #23 pixel spacing
+            self.color_buttons.append((pygame.Rect(x, 163, 20, 20), color))
+        for i, color_name in enumerate(bottom_row):
+            x = 15 + i * 23
+            self.color_buttons.append(
+                (pygame.Rect(x, 188, 20, 20), pygame.Color(color_name))
+            )
+       
         self.color_selector = ColorSelector(self.color_buttons, self.font)
 
 
 ############################## HELPERS ##############################
 # Internal methods for drawing menu components and updating settings
+
+    def _make_slider(self, label, slider, step=1, display_fn=None):
+        return SliderSetting(label, slider, self.panel_rect, step=step, display_value_fn=display_fn)
+
 
     def _draw_button(self, screen, rect, label=None, label_color=(0, 0, 0), color=(0, 0, 0, 180)):
         """Draw a semi-transparent button with optional label."""

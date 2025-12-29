@@ -1,23 +1,68 @@
 import pygame
+from constants import GRAY
 
 
 class LifeView:
     def __init__(self, screen, zoom):
         self.screen = screen
         self.zoom = zoom
+        self.cell_alpha = {}    # {(col, row): alpha}
+        self.fade_speed = 0.1   # per frame decay
+        self.birth_alpha = 1.0  # alpha when cell becomes alive
+
+    
+    def update_zoom(self, zoom):
+        """Update zoom level dynamically."""
+        self.zoom = zoom
 
 
-    def draw_cells(self, positions, color):
-        """Draws the live cells on the screen."""
-        for col, row in positions:
-            pygame.draw.rect(
-                self.screen,
-                color,
-                (col * self.zoom,
-                 row * self.zoom,
-                 self.zoom,
-                 self.zoom)
+    def update_fade(self, alive_cells):
+        """
+        Update alpha for fading cells.
+        alive_cells: set of currently alive positions {(col, row), ...}
+        """
+        # Fade out dead cells
+        to_remove = []
+        for pos, alpha in self.cell_alpha.items():
+            if pos not in alive_cells:
+                alpha -= self.fade_speed
+                if alpha <= 0:
+                    to_remove.append(pos)
+                else:
+                    self.cell_alpha[pos] = alpha
+
+        for pos in to_remove:
+            del self.cell_alpha[pos]
+
+        # Set new alpha for live cells
+        for pos in alive_cells:
+            # Snap new births to full alpha
+            self.cell_alpha[pos] = self.birth_alpha
+
+
+    def draw_cells(self, alive_cells, color):
+        """
+        Draw cells with fade effect.
+        alive_cells: set of positions
+        color: RGB tuple
+        """
+        for pos, alpha in self.cell_alpha.items():
+            col, row = pos
+            rect = pygame.Rect(
+                col * self.zoom,
+                row * self.zoom,
+                self.zoom,
+                self.zoom
             )
+
+            # Blend color with background based on alpha
+            fade_color = (
+                int(color[0] * alpha + GRAY[0] * (1 - alpha)),
+                int(color[1] * alpha + GRAY[1] * (1 - alpha)),
+                int(color[2] * alpha + GRAY[2] * (1 - alpha)),
+            )
+
+            pygame.draw.rect(self.screen, fade_color, rect)
 
 
     def draw_grid(self, width, height, color, show=False):
@@ -37,3 +82,6 @@ class LifeView:
                     (0, y * self.zoom),
                     (width * self.zoom, y * self.zoom)
                 )
+
+
+    

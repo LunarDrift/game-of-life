@@ -234,6 +234,7 @@ class LifeGame:
         )
 
         self.update_simulation_settings()
+        self.view.update_fade(self.simulation.positions)
 
         # Step the simulation while playing
         if self.playing:
