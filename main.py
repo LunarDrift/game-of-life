@@ -97,6 +97,10 @@ class LifeGame:
         elif event.key == pygame.K_g:
             # Toggle grid lines
             self.settings.show_grid = not self.settings.show_grid
+
+        elif event.key == pygame.K_f:
+            # Toggle fade effect
+            self.settings.fade_enabled = not self.settings.fade_enabled
         
         elif event.key == pygame.K_ESCAPE:
             pygame.quit()
@@ -215,6 +219,11 @@ class LifeGame:
         if current_value != prev_value:
             if apply_fn:
                 apply_fn(current_value)
+
+            # Special case for fade_enabled to sync toggle button state
+            if attr_name == "fade_enabled":
+                self.settings.fade_toggle.set_value(current_value)
+
             # Update previous value in the dict
             self.prev_settings[attr_name] = current_value
 
@@ -251,7 +260,7 @@ class LifeGame:
 
     def update_simulation(self, dt):
         """Update simulation state and view based on current settings."""
-        
+
         self.update_simulation_settings()
         self.view.update_fade(self.simulation.positions, dt)
 

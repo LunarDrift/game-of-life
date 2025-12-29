@@ -240,8 +240,8 @@ class SettingsMenu:
         if not self.open:
             return
         
-        self.fade_toggle.handle_event(event)
-        self.fade_enabled = self.fade_toggle.value
+        if self.fade_toggle.handle_event(event):
+            self.fade_enabled = self.fade_toggle.value
 
         for slider in self.sliders:
             slider.handle_event(event)

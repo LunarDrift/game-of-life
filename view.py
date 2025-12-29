@@ -20,7 +20,9 @@ class LifeView:
     def update_fade(self, alive_cells, dt):
         """
         Update alpha for fading cells.
-        alive_cells: set of currently alive positions {(col, row), ...}
+
+        :alive_cells: set of currently alive positions {(col, row), ...}
+        :dt: time delta since last update in seconds
         """
         if not self.fade_enabled:
             self.cell_fade.clear()
@@ -46,8 +48,9 @@ class LifeView:
     def draw_cells(self, alive_cells, color):
         """
         Draw cells with fade effect.
-        alive_cells: set of positions
-        color: RGB tuple
+
+        :alive_cells: set of positions
+        :color: RGB tuple
         """
         for pos, remaining in self.cell_fade.items():
             if not self.fade_enabled and pos not in alive_cells:
@@ -74,7 +77,13 @@ class LifeView:
 
 
     def draw_grid(self, width, height, color, show=False):
-        """Draws the grid lines on the screen."""
+        """Draws the grid lines on the screen.
+
+        :width: number of columns
+        :height: number of rows
+        :color: RGB tuple for grid line color
+        :show: boolean to toggle grid visibility
+        """
         if show:
             for x in range(width):
                 pygame.draw.line(
@@ -90,6 +99,3 @@ class LifeView:
                     (0, y * self.zoom),
                     (width * self.zoom, y * self.zoom)
                 )
-
-
-    

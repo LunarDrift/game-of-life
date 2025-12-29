@@ -20,11 +20,17 @@ class ToggleButton:
         self.text_color = text_color
         self.font = font or pygame.font.SysFont("ubuntumono", 13)
 
+    
+    def set_value(self, value: bool):
+        self.value = value
+
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos):
                 self.value = not self.value
+                return True
+        return False
 
     
     def draw(self, screen):
