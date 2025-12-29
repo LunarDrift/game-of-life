@@ -10,11 +10,17 @@ from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR
 
 class LifeGame:
     def __init__(self):
+        # -------------------------------------------------
+        # Pygame setup
+        # -------------------------------------------------
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Conway's Game of Life")
         self.clock = pygame.time.Clock()
         self.running = True
 
+        # -------------------------------------------------
+        # Game components
+        # -------------------------------------------------
         self.settings = SettingsMenu()
         self.simulation = LifeSimulation(
             WIDTH // self.settings.zoom,
@@ -26,8 +32,9 @@ class LifeGame:
             self.settings.color_buttons,
             self.settings.font
         )
-
-        # Keep track of previous settings to detect changes
+        # -------------------------------------------------
+        # Game state
+        # -------------------------------------------------
         self.prev_settings = {
             "zoom": self.settings.zoom,
             "show_grid": self.settings.show_grid,
@@ -37,7 +44,9 @@ class LifeGame:
             "fade_duration": self.settings.fade_duration,
         }
 
-        # Scroll wheel targets for adjusting settings
+        # -------------------------------------------------
+        # Scrollwheel targets
+        # -------------------------------------------------
         self.scroll_targets = [
             {
                 "rect": self.settings.zoom_slider.rect,
@@ -76,7 +85,6 @@ class LifeGame:
                 "invert": False,
             },
         ]
-
 
 ############################## HELPER METHODS ##############################
 # Internal methods for handling input and game logic
