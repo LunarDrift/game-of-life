@@ -52,7 +52,6 @@ class LifeView:
             if not self.fade_enabled and pos not in alive_cells:
                 continue
 
-
             col, row = pos
             rect = pygame.Rect(
                 col * self.zoom,
@@ -67,11 +66,8 @@ class LifeView:
                 int(color[2] * alpha + GRAY[2] * (1 - alpha)),
             )
 
-            pygame.draw.rect(
-                self.screen,
-                fade_color if self.fade_enabled else color,
-                rect
-            )
+            draw_color = fade_color if self.fade_enabled else color
+            pygame.draw.rect(self.screen, draw_color, rect)
 
 
     def draw_grid(self, width, height, color, show=False):
