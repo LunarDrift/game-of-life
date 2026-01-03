@@ -5,6 +5,7 @@ from view import LifeView
 from settingsmenu import SettingsMenu
 from controlsmenu import ControlsMenu
 from colorselector import ColorSelector
+from patternmenu import PatternMenu
 from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR
 
 
@@ -23,15 +24,14 @@ class LifeGame:
         # -------------------------------------------------
         self.settings = SettingsMenu()
         self.simulation = LifeSimulation(
-            WIDTH // self.settings.zoom,
-            HEIGHT // self.settings.zoom
+            WIDTH // self.settings.zoom, HEIGHT // self.settings.zoom
         )
         self.view = LifeView(self.screen, self.settings.zoom)
         self.controls = ControlsMenu()
         self.color_selector = ColorSelector(
-            self.settings.color_buttons,
-            self.settings.font
+            self.settings.color_buttons, self.settings.font
         )
+        self.pattern_menu = PatternMenu()
         # -------------------------------------------------
         # Game state
         # -------------------------------------------------
@@ -86,13 +86,68 @@ class LifeGame:
             },
         ]
 
-############################## HELPER METHODS ##############################
-# Internal methods for handling input and game logic
+    ############################## HELPER METHODS ##############################
+    # Internal methods for handling input and game logic
+
+    def load_pattern(self, filepath):
+        """
+        Load a .cells pattern file and populate the simulation grid.
+
+        :filepath: path to the .cells file
+        """
+        pattern = []
+
+        try:
+            with open(filepath, 'r') as f:
+                for line in f:
+                    # Skip comment lines
+                    if line.startswith('!'):
+                        continue
+                    # Skip empty lines
+                    line = line.rstrip('\n')
+                    if not line:
+                        continue
+                    pattern.append(line)
+
+        except FileNotFoundError:
+            print(f"Error: File '{filepath}' not found.")
+            return
+            
+        except Exception as e:
+            print(f"Error reading file: {e}")
+            return
+        
+        # Clear existing cells
+        self.simulation.positions.clear()
+
+        # Calculate pattern dimensions
+        pattern_height = len(pattern)
+        pattern_width = max(len(row) for row in pattern) if pattern else 0
+
+        if pattern_width == 0 or pattern_height == 0:
+            print("Error: Pattern file is empty or invalid.")
+            return
+        
+        # Center pattern on the grid
+        grid_width = self.simulation.width
+        grid_height = self.simulation.height
+        start_x = (grid_width - pattern_width) // 2
+        start_y = (grid_height - pattern_height) // 2
+
+        # Populate live cells based on pattern
+        for y, row in enumerate(pattern):
+            for x, char in enumerate(row):
+                if char == 'O':
+                    cell_x = start_x + x
+                    cell_y = start_y + y
+                    # Ensure cell is within grid bounds
+                    if 0 <= cell_x < grid_width and 0 <= cell_y < grid_height:
+                        self.simulation.positions.add((cell_x, cell_y))
 
     def _handle_keyboard(self, event):
         if event.type != pygame.KEYDOWN:
             return
-        
+
         if event.key == pygame.K_SPACE:
             # Pause or unpause the game
             self.playing = not self.playing
@@ -104,10 +159,7 @@ class LifeGame:
             self.count = 0
 
         elif event.key == pygame.K_r:
-            self._reset_cells(
-                WIDTH // self.settings.zoom,
-                HEIGHT // self.settings.zoom
-            )
+            self._reset_cells(WIDTH // self.settings.zoom, HEIGHT // self.settings.zoom)
 
         elif event.key == pygame.K_g:
             # Toggle grid lines
@@ -116,17 +168,20 @@ class LifeGame:
         elif event.key == pygame.K_f:
             # Toggle fade effect
             self.settings.fade_enabled = not self.settings.fade_enabled
-        
+
         elif event.key == pygame.K_ESCAPE:
             pygame.quit()
             exit()
 
+        # elif event.key == pygame.K_l:
+        #     # Load a pattern from file
+        #     self.load_pattern("all/glider.cells")
 
     def _handle_mouse(self):
         # Mouse Drawing
         if not self._can_draw():
             return
-        
+
         mouse_pressed = pygame.mouse.get_pressed()
         # Click and drag to draw new cells
         x, y = pygame.mouse.get_pos()
@@ -136,8 +191,7 @@ class LifeGame:
 
         if mouse_pressed[0]:
             # Left click to add a cell
-            if 0 <= col < self.simulation.width and \
-            0 <= row < self.simulation.height:
+            if 0 <= col < self.simulation.width and 0 <= row < self.simulation.height:
                 self.simulation.positions.add(pos)
 
         elif mouse_pressed[2]:
@@ -145,7 +199,6 @@ class LifeGame:
             if pos in self.simulation.positions:
                 # Remove position if it already exists
                 self.simulation.positions.remove(pos)
-
 
     def _handle_scrollwheel(self, event):
         """Handle mouse wheel events for sliders and zoom."""
@@ -162,7 +215,7 @@ class LifeGame:
                     target_slider = slider_setting
                     break
 
-            # Still want zoom functionality when menu is open, if mouse not in panel  
+            # Still want zoom functionality when menu is open, if mouse not in panel
             if not target_slider and not settings.panel_rect.collidepoint(mouse_pos):
                 target_slider = next(
                     s for s in settings.sliders if "zoom" in s.label.lower()
@@ -199,35 +252,34 @@ class LifeGame:
             elif "population" in label_lower:
                 settings.initial_cells = value
 
-
     def _reset_cells(self, grid_width, grid_height):
         self.simulation.positions.clear()
 
         # Probability-based generation for cells
         prob_alive = self.settings.initial_population_slider.val / 100
         positions = set()
-        
+
         for col in range(grid_width):
             for row in range(grid_height):
                 if random.random() < prob_alive:
                     positions.add((col, row))
         self.simulation.positions = positions
 
-    
     def _can_draw(self):
-        if self.settings.open or self.controls.open:
+        if self.settings.open or self.controls.open or self.pattern_menu.open:
             return False
         mouse_x, mouse_y = pygame.mouse.get_pos()
         if self.settings.button_rect.collidepoint((mouse_x, mouse_y)):
             return False
         elif self.controls.button_rect.collidepoint((mouse_x, mouse_y)):
             return False
+        elif self.pattern_menu.button_rect.collidepoint((mouse_x, mouse_y)):
+            return False
         return True
 
-    
     def _sync_setting(self, attr_name, apply_fn=None, getter=None):
         """Sync a setting from self.settings to the game/view, only if it changed."""
-        # Use getter for color selection, otherwise default to self.settings       
+        # Use getter for color selection, otherwise default to self.settings
         current_value = getter() if getter else getattr(self.settings, attr_name)
         prev_value = self.prev_settings.get(attr_name)
 
@@ -242,16 +294,15 @@ class LifeGame:
             # Update previous value in the dict
             self.prev_settings[attr_name] = current_value
 
-
     def _apply_zoom(self, zoom_value):
         self.view.zoom = zoom_value
         self.simulation.update_grid_size(WIDTH, HEIGHT, zoom_value)
         self.view.cell_fade.clear()
 
-############################## END HELPER METHODS ##############################
+    ############################## END HELPER METHODS ##############################
 
-############################## EVENTS ##############################
-# Handle all pygame events (keyboard, mouse, etc.)
+    ############################## EVENTS ##############################
+    # Handle all pygame events (keyboard, mouse, etc.)
 
     def handle_events(self):
         events = pygame.event.get()
@@ -262,16 +313,17 @@ class LifeGame:
             self.settings.handle_event(event)
             self._handle_scrollwheel(event)
             self.controls.handle_event(event)
+            self.pattern_menu.handle_event(event)
             self._handle_keyboard(event)
             if self.settings.open:
                 self.color_selector.handle_event(event)
-        
-        return True    
 
-############################## END EVENTS ##############################
+        return True
 
-############################## UPDATE ##############################
-# Update simulation state and settings based on events
+    ############################## END EVENTS ##############################
+
+    ############################## UPDATE ##############################
+    # Update simulation state and settings based on events
 
     def update_simulation(self, dt):
         """Update simulation state and view based on current settings."""
@@ -286,55 +338,55 @@ class LifeGame:
             if self.count >= self.settings.get_speed():
                 self.count = 0
                 self.simulation.step()
-            
+
+        # Load selected pattern if any
+        if self.pattern_menu.selected_pattern:
+            self.load_pattern(self.pattern_menu.selected_pattern)
+            self.pattern_menu.selected_pattern = None
 
     def update_simulation_settings(self):
         # Update dependent settings in simulation if they have changed
-        self._sync_setting(
-            "zoom",
-            apply_fn=self._apply_zoom
-        )
+        self._sync_setting("zoom", apply_fn=self._apply_zoom)
 
         self._sync_setting("show_grid")
         self._sync_setting("sim_speed")
         self._sync_setting("fade_enabled", apply_fn=self.view.set_fade_enabled)
         self._sync_setting(
-            "fade_duration",
-            apply_fn=lambda v: setattr(self.view, "fade_duration", v)
+            "fade_duration", apply_fn=lambda v: setattr(self.view, "fade_duration", v)
         )
         self._sync_setting(
             "cell_color",
             apply_fn=lambda v: setattr(self.color_selector, "selected_color", v),
-            getter=lambda: self.color_selector.selected_color
+            getter=lambda: self.color_selector.selected_color,
         )
 
-############################## END UPDATE ##############################
+    ############################## END UPDATE ##############################
 
-############################## DRAWING ##############################
-# Draw all updated game elements to the screen
+    ############################## DRAWING ##############################
+    # Draw all updated game elements to the screen
 
     def draw(self):
         self.screen.fill(GRAY)
-        self.view.draw_cells(self.simulation.positions, self.color_selector.selected_color)
+        self.view.draw_cells(
+            self.simulation.positions, self.color_selector.selected_color
+        )
 
         grid_width = int(WIDTH // self.settings.zoom)
         grid_height = int(HEIGHT // self.settings.zoom)
         self.view.draw_grid(
-            grid_width,
-            grid_height,
-            GRID_COLOR,
-            self.settings.show_grid
+            grid_width, grid_height, GRID_COLOR, self.settings.show_grid
         )
 
         self.settings.draw(self.screen)
         self.controls.draw(self.screen)
+        self.pattern_menu.draw(self.screen)
 
         pygame.display.set_caption("Playing" if self.playing else "Paused")
         pygame.display.flip()
 
-############################## END DRAWING ##############################
+    ############################## END DRAWING ##############################
 
-############################## MAIN LOOP ##############################
+    ############################## MAIN LOOP ##############################
 
     def main(self):
         running = True
