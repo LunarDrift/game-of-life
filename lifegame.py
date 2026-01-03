@@ -98,13 +98,13 @@ class LifeGame:
         pattern = []
 
         try:
-            with open(filepath, 'r') as f:
+            with open(filepath, "r") as f:
                 for line in f:
                     # Skip comment lines
-                    if line.startswith('!'):
+                    if line.startswith("!"):
                         continue
                     # Skip empty lines
-                    line = line.rstrip('\n')
+                    line = line.rstrip("\n")
                     if not line:
                         continue
                     pattern.append(line)
@@ -112,11 +112,11 @@ class LifeGame:
         except FileNotFoundError:
             print(f"Error: File '{filepath}' not found.")
             return
-            
+
         except Exception as e:
             print(f"Error reading file: {e}")
             return
-        
+
         # Clear existing cells
         self.simulation.positions.clear()
 
@@ -127,7 +127,7 @@ class LifeGame:
         if pattern_width == 0 or pattern_height == 0:
             print("Error: Pattern file is empty or invalid.")
             return
-        
+
         # Center pattern on the grid
         grid_width = self.simulation.width
         grid_height = self.simulation.height
@@ -137,7 +137,7 @@ class LifeGame:
         # Populate live cells based on pattern
         for y, row in enumerate(pattern):
             for x, char in enumerate(row):
-                if char == 'O':
+                if char == "O":
                     cell_x = start_x + x
                     cell_y = start_y + y
                     # Ensure cell is within grid bounds
