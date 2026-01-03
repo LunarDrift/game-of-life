@@ -12,7 +12,7 @@ class ControlsMenu:
 
         # Controls button and panel rectangles
         self.button_rect = pygame.Rect(90, 5, 80, 20)
-        self.panel_rect = pygame.Rect(90, 26, 260, 195)
+        self.panel_rect = pygame.Rect(5, 26, 260, 195)
 
         # Font for button labels
         self.font = pygame.font.SysFont("ubuntumono", 13)

@@ -1,41 +1,59 @@
-[
-  {
-    "name": "Oscillators",
-    "patterns": [
-      {
-        "label": "Blinker",
-        "file": "patterns/blinker.cells"
-      },
-      {
-        "label": "Pulsar",
-        "file": "patterns/pulsar.cells"
-      }
-    ]
-  },
-  {
-    "name": "Spaceships",
-    "patterns": [
-      {
-        "label": "Glider",
-        "file": "patterns/glider.cells"
-      },
-      {
-        "label": "Lightweight Spaceship",
-        "file": "patterns/lwss.cells"
-      }
-    ]
-  },
-  {
-    "name": "Special",
-    "patterns": [
-      {
-        "label": "Gosper Glider Gun",
-        "file": "patterns/gosperglidergun.cells"
-      },
-      {
-        "label": "R-pentomino",
-        "file": "patterns/rpentomino.cells"
-      }
-    ]
-  }
-]
+{
+  "categories": [
+    {
+      "label": "Oscillators",
+      "patterns": [
+        {
+          "label": "Blinker",
+          "file": "patterns/blinker.cells"
+        },
+        {
+          "label": "Pulsar",
+          "file": "patterns/pulsar.cells"
+        },
+        {
+          "label": "Toad",
+          "file": "patterns/toad.cells"
+        }
+      ]
+    },
+    {
+      "label": "Spaceships",
+      "patterns": [
+        {
+          "label": "Glider",
+          "file": "patterns/glider.cells"
+        },
+        {
+          "label": "Lightweight Spaceship",
+          "file": "patterns/lwss.cells"
+        },
+        {
+          "label": "Middleweight Spaceship",
+          "file": "patterns/mwss.cells"
+        },
+        {
+          "label": "Heavyweight Spaceship",
+          "file": "patterns/hwss.cells"
+        }
+      ]
+    },
+    {
+      "label": "Special",
+      "patterns": [
+        {
+          "label": "Gosper Glider Gun",
+          "file": "patterns/gosperglidergun.cells"
+        },
+        {
+          "label": "R-pentomino",
+          "file": "patterns/rpentomino.cells"
+        },
+        {
+          "label": "Diehard",
+          "file": "patterns/diehard.cells"
+        }
+      ]
+    }
+  ]
+}

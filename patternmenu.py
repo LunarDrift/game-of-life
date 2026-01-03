@@ -14,35 +14,45 @@ class PatternMenu:
 
     def __init__(self, json_path="patterns.json"):
         self.open = False
-        # Controls button and panel rectangles
+        # -------------------------------------------------
+        # 'Patterns' button and panel rectangles
+        # -------------------------------------------------
         self.button_rect = pygame.Rect(175, 5, 80, 20)
-        self.panel_rect = pygame.Rect(175, 26, 200, 235)
+        self.panel_rect = pygame.Rect(5, 26, 200, 325)
+        # -------------------------------------------------
         # Font for button labels
+        # -------------------------------------------------
         self.font = pygame.font.SysFont("ubuntumono", 13)
-        # Currently selected pattern
+        # -------------------------------------------------
+        # Pattern data and buttons
+        # -------------------------------------------------
         self.selected_pattern = None
         self.pattern_buttons = []
-
-        # Load pattern data from JSON
         with open(json_path, "r") as f:
             self.categories = json.load(f)
 
     def _draw_pattern_button(self, screen, rect, label):
-        """Draw a button for a predefined pattern."""
-        y = self.panel_rect.y + 5
+        """Draw buttons for predefined patterns."""
+        self.pattern_buttons.clear()
 
-        for category in self.categories:
-            # Draw category title
-            title_txt = self.font.render(category["name"], True, WHITE)
-            screen.blit(
-                title_txt, (self.panel_rect.centerx - title_txt.get_width() // 2, y)
-            )
-            y += 25
+        y_offset = rect.top + 10
+        category_height = 15
+        button_height = 20
+        spacing = 5
+        category_spacing = 0
+
+        for i, category in enumerate(self.categories["categories"]):
+            # Add extra spacing between categories (except before first)
+            if i > 0:
+                y_offset += category_spacing
+
+            # Draw category label
+            category_text = self.font.render(category["label"], True, WHITE)
+            screen.blit(category_text, (rect.left + 10, y_offset))
+            y_offset += category_height + spacing
 
             for pattern in category["patterns"]:
-                button_rect = pygame.Rect(
-                    self.panel_rect.x + 20, y, self.panel_rect.width - 40, 20
-                )
+                button_rect = pygame.Rect(rect.left + 10, y_offset, rect.width - 20, button_height)
                 self._draw_button(
                     screen,
                     button_rect,
@@ -51,7 +61,7 @@ class PatternMenu:
                     color=BUTTON_COLOR,
                 )
                 self.pattern_buttons.append((button_rect, pattern))
-                y += 25
+                y_offset += button_height + spacing
 
     def _draw_button(
         self,
@@ -124,6 +134,5 @@ class PatternMenu:
         self._draw_panel(screen)
 
         # Draw buttons for predefined patterns
-        self.pattern_buttons.clear()
         self._draw_pattern_button(screen, self.panel_rect, "Pattern")
 
