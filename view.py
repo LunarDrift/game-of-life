@@ -104,3 +104,20 @@ class LifeView:
                     (0, y * self.zoom),
                     (width * self.zoom, y * self.zoom)
                 )
+
+    def draw_generation_tracker(self, screen, generations, font, color, position):
+        """Display the current generation count on the screen.
+
+        :generations: current generation count
+        :font: pygame Font object for rendering text
+        :color: RGB tuple for text color
+        :position: (x, y) tuple for text position
+        """
+        gen_text = font.render(f"Generation: {generations}", True, color)
+        bg = pygame.Surface(
+            (gen_text.get_width() + 10, gen_text.get_height() + 6),
+            pygame.SRCALPHA
+        )
+        bg.fill((0, 0, 0, 120))  # Semi-transparent background
+        screen.blit(bg, position)
+        screen.blit(gen_text, (position[0] + 5, position[1] + 3))

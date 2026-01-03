@@ -6,7 +6,7 @@ from settingsmenu import SettingsMenu
 from controlsmenu import ControlsMenu
 from colorselector import ColorSelector
 from patternmenu import PatternMenu
-from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR
+from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR, BUTTON_LABEL_COLOR
 
 
 class LifeGame:
@@ -380,6 +380,13 @@ class LifeGame:
         self.settings.draw(self.screen)
         self.controls.draw(self.screen)
         self.pattern_menu.draw(self.screen)
+        self.view.draw_generation_tracker(
+            self.screen,
+            self.simulation.generations,
+            self.settings.font,
+            BUTTON_LABEL_COLOR,
+            (self.screen.get_width() - 150, 10),
+        )
 
         pygame.display.set_caption("Playing" if self.playing else "Paused")
         pygame.display.flip()

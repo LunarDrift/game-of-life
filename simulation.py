@@ -5,6 +5,7 @@ class LifeSimulation:
         self.width = width
         self.height = height
         self.positions = set()
+        self.generations = 0
 
 
     def clear(self):
@@ -25,6 +26,7 @@ class LifeSimulation:
     def step(self):
         """Advance the simulation by one generation."""
         self.positions = self._next_generation()
+        self.generations += 1
 
     
     def _next_generation(self):
