@@ -7,6 +7,7 @@ from ui.controlsmenu import ControlsMenu
 from ui.colorselector import ColorSelector
 from ui.patternmenu import PatternMenu
 from ui.hud import HUD
+from input_manager import InputManager
 from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR
 
 
@@ -34,6 +35,7 @@ class LifeGame:
         )
         self.pattern_menu = PatternMenu()
         self.hud = HUD(self.settings.font)
+        self.input = InputManager()
         # -------------------------------------------------
         # Game state
         # -------------------------------------------------
@@ -88,8 +90,80 @@ class LifeGame:
             },
         ]
 
+        # -------------------------------------------------
+        # Define key bindings
+        # -------------------------------------------------
+        self.input.bind_key(pygame.K_SPACE, self.toggle_play)
+        self.input.bind_key(pygame.K_c, self.clear_grid)
+        self.input.bind_key(pygame.K_r, self.randomize_grid)
+        self.input.bind_key(pygame.K_g, self.toggle_grid)
+        self.input.bind_key(pygame.K_f, self.toggle_fade)
+        self.input.bind_key(pygame.K_ESCAPE, self.quit_game)
+
+        # -------------------------------------------------
+        # Mouse bindings
+        # -------------------------------------------------
+        self.input.bind_mouse(
+            1, self.guarded(self._can_draw, self.cell_action(add=True))
+        )
+        self.input.bind_mouse(
+            3, self.guarded(self._can_draw, self.cell_action(add=False))
+        )
+        self.input.bind_scroll(self._handle_scrollwheel)
+
     ############################## HELPER METHODS ##############################
     # Internal methods for handling input and game logic
+    def toggle_play(self):
+        self.playing = not self.playing
+    
+    def clear_grid(self):
+        self.simulation.positions.clear()
+        self.playing = False
+        self.count = 0
+        self.hud.reset_generations()
+        
+    
+    def randomize_grid(self):
+        self._randomize_cells(WIDTH // self.settings.zoom, HEIGHT // self.settings.zoom)
+
+    def toggle_grid(self):
+        self.settings.show_grid = not self.settings.show_grid
+
+    def toggle_fade(self):
+        self.settings.fade_enabled = not self.settings.fade_enabled
+
+    def quit_game(self):
+        pygame.quit()
+
+    def action(self, func):
+        """Wrap a function to be used as a button callback."""
+        # Used for button callbacks; trying to learn a bit of functional programming
+        def handler():
+            func()
+        return handler
+    
+    def cell_action(self, add=True):
+        """Return a function that adds or removes a cell at the mouse position."""
+        # Used for mouse click actions like drawing/erasing cells
+        def action():
+            x, y = pygame.mouse.get_pos()
+            col = x // self.settings.zoom
+            row = y // self.settings.zoom
+            pos = (col, row)
+
+            if add:
+                self.simulation.positions.add(pos)
+            else:
+                self.simulation.positions.discard(pos)
+        return action
+    
+    def guarded(self, condition_fn, action_fn):
+        """Run action_fn only if condition_fn returns True."""
+        # Need this to prevent drawing when menus are open
+        def handler():
+            if condition_fn():
+                action_fn()
+        return handler
 
     def load_pattern(self, filepath):
         """
@@ -146,62 +220,6 @@ class LifeGame:
                     if 0 <= cell_x < grid_width and 0 <= cell_y < grid_height:
                         self.simulation.positions.add((cell_x, cell_y))
 
-    def _handle_keyboard(self, event):
-        if event.type != pygame.KEYDOWN:
-            return
-
-        if event.key == pygame.K_SPACE:
-            # Pause or unpause the game
-            self.playing = not self.playing
-
-        elif event.key == pygame.K_c:
-            # Clear the grid and pause the simulation
-            self.simulation.positions.clear()
-            self.playing = False
-            self.count = 0
-
-        elif event.key == pygame.K_r:
-            self._reset_cells(WIDTH // self.settings.zoom, HEIGHT // self.settings.zoom)
-
-        elif event.key == pygame.K_g:
-            # Toggle grid lines
-            self.settings.show_grid = not self.settings.show_grid
-
-        elif event.key == pygame.K_f:
-            # Toggle fade effect
-            self.settings.fade_enabled = not self.settings.fade_enabled
-
-        elif event.key == pygame.K_ESCAPE:
-            pygame.quit()
-            exit()
-
-        # elif event.key == pygame.K_l:
-        #     # Load a pattern from file
-        #     self.load_pattern("all/glider.cells")
-
-    def _handle_mouse(self):
-        # Mouse Drawing
-        if not self._can_draw():
-            return
-
-        mouse_pressed = pygame.mouse.get_pressed()
-        # Click and drag to draw new cells
-        x, y = pygame.mouse.get_pos()
-        col = x // self.settings.zoom
-        row = y // self.settings.zoom
-        pos = (col, row)
-
-        if mouse_pressed[0]:
-            # Left click to add a cell
-            if 0 <= col < self.simulation.width and 0 <= row < self.simulation.height:
-                self.simulation.positions.add(pos)
-
-        elif mouse_pressed[2]:
-            # Right click to remove a cell
-            if pos in self.simulation.positions:
-                # Remove position if it already exists
-                self.simulation.positions.remove(pos)
-
     def _handle_scrollwheel(self, event):
         """Handle mouse wheel events for sliders and zoom."""
         if event.type != pygame.MOUSEWHEEL:
@@ -254,7 +272,7 @@ class LifeGame:
             elif "population" in label_lower:
                 settings.initial_cells = value
 
-    def _reset_cells(self, grid_width, grid_height):
+    def _randomize_cells(self, grid_width, grid_height):
         self.simulation.positions.clear()
 
         # Probability-based generation for cells
@@ -301,6 +319,27 @@ class LifeGame:
         self.simulation.update_grid_size(WIDTH, HEIGHT, zoom_value)
         self.view.cell_fade.clear()
 
+    def update_simulation_settings(self):
+        # Update dependent settings in simulation if they have changed
+        self._sync_setting("zoom", apply_fn=self._apply_zoom)
+
+        self._sync_setting("show_grid")
+        self._sync_setting("sim_speed")
+        self._sync_setting("fade_enabled", apply_fn=self.view.set_fade_enabled)
+        self._sync_setting(
+            "fade_duration", apply_fn=lambda v: setattr(self.view, "fade_duration", v)
+        )
+        self._sync_setting(
+            "cell_color",
+            apply_fn=lambda v: setattr(self.color_selector, "selected_color", v),
+            getter=lambda: self.color_selector.selected_color,
+        )
+        self.hud.update(
+            generations=self.simulation.generations,
+            cell_count=len(self.simulation.positions),
+            clock=self.clock,
+        )
+
     ############################## END HELPER METHODS ##############################
 
     ############################## EVENTS ##############################
@@ -316,7 +355,7 @@ class LifeGame:
             self._handle_scrollwheel(event)
             self.controls.handle_event(event)
             self.pattern_menu.handle_event(event)
-            self._handle_keyboard(event)
+            self.input.handle_event(event)
             if self.settings.open:
                 self.color_selector.handle_event(event)
 
@@ -346,26 +385,6 @@ class LifeGame:
             self.load_pattern(self.pattern_menu.selected_pattern)
             self.pattern_menu.selected_pattern = None
 
-    def update_simulation_settings(self):
-        # Update dependent settings in simulation if they have changed
-        self._sync_setting("zoom", apply_fn=self._apply_zoom)
-
-        self._sync_setting("show_grid")
-        self._sync_setting("sim_speed")
-        self._sync_setting("fade_enabled", apply_fn=self.view.set_fade_enabled)
-        self._sync_setting(
-            "fade_duration", apply_fn=lambda v: setattr(self.view, "fade_duration", v)
-        )
-        self._sync_setting(
-            "cell_color",
-            apply_fn=lambda v: setattr(self.color_selector, "selected_color", v),
-            getter=lambda: self.color_selector.selected_color,
-        )
-        self.hud.update(
-            generations=self.simulation.generations,
-            cell_count=len(self.simulation.positions),
-            clock=self.clock,
-        )
 
     ############################## END UPDATE ##############################
 
@@ -404,7 +423,6 @@ class LifeGame:
         while running:
             dt = self.clock.tick(FPS) / 1000.0
             running = self.handle_events()
-            self._handle_mouse()
             self.update_simulation(dt)
             self.draw()
 

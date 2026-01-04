@@ -10,6 +10,7 @@ class LifeSimulation:
 
     def clear(self):
         self.positions.clear()
+        self.generations = 0
 
 
     def step(self):
