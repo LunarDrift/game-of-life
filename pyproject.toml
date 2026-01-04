@@ -1,7 +1,9 @@
 [project]
-name = "conway"
+name = "conways-pygame-of-life"
 version = "0.1.0"
-description = "Add your description here"
+description = "Conway's Game of Life simulation made in Python using the Pygame-ce library"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pygame-ce >= 2.5.6",
+]

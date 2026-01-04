@@ -1,8 +1,8 @@
 import pygame
-from slider import SimpleSlider
-from slidersetting import SliderSetting
-from colorselector import ColorSelector
-from togglebutton import ToggleButton
+from ui.slider import SimpleSlider
+from ui.slidersetting import SliderSetting
+from ui.colorselector import ColorSelector
+from ui.togglebutton import ToggleButton
 from constants import (
     RED,
     ORANGE,

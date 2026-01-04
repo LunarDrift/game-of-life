@@ -16,7 +16,7 @@ class HUD:
         """Draw a semi-transparent HUD bar at the top of the screen."""
         hud_height = 23
         hud_bar = pygame.Surface((screen.get_width(), hud_height), pygame.SRCALPHA)
-        hud_bar.fill((0, 0, 0, 150))  # Semi-transparent black
+        hud_bar.fill((0, 0, 0, 200))  # Semi-transparent black
         screen.blit(hud_bar, (0, 0))
 
     def _draw_element_bg(self, screen, text, position):

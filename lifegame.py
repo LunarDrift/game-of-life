@@ -2,11 +2,11 @@ import random
 import pygame
 from simulation import LifeSimulation
 from view import LifeView
-from settingsmenu import SettingsMenu
-from controlsmenu import ControlsMenu
-from colorselector import ColorSelector
-from patternmenu import PatternMenu
-from hud import HUD
+from ui.settingsmenu import SettingsMenu
+from ui.controlsmenu import ControlsMenu
+from ui.colorselector import ColorSelector
+from ui.patternmenu import PatternMenu
+from ui.hud import HUD
 from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR
 
 
