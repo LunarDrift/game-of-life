@@ -17,8 +17,8 @@ class PatternMenu:
         # -------------------------------------------------
         # 'Patterns' button and panel rectangles
         # -------------------------------------------------
-        self.button_rect = pygame.Rect(175, 5, 80, 20)
-        self.panel_rect = pygame.Rect(5, 26, 200, 325)
+        self.button_rect = pygame.Rect(175, 2, 80, 20)
+        self.panel_rect = pygame.Rect(5, 23, 200, 325)
         # -------------------------------------------------
         # Font for button labels
         # -------------------------------------------------

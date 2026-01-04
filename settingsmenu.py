@@ -26,8 +26,8 @@ class SettingsMenu:
         # -------------------------------------------------
         # Panel + button
         # -------------------------------------------------
-        self.button_rect = pygame.Rect(5, 5, 80, 20)
-        self.panel_rect = pygame.Rect(5, 26, 178, 255)
+        self.button_rect = pygame.Rect(5, 2, 80, 20)
+        self.panel_rect = pygame.Rect(5, 23, 178, 255)
         self.font = pygame.font.SysFont("ubuntumono", 13)
 
         # -------------------------------------------------

@@ -14,13 +14,20 @@ class LifeSimulation:
 
     def gen(self, num):
         """Generate `num` amount of random positions on the grid."""
-        return {
-            (
+        positions = set()
+        while len(positions) < num:
+            positions.add((
                 random.randrange(0, self.width),
                 random.randrange(0, self.height)
-            )
-            for _ in range(num)
-        }
+            ))
+        return positions
+        # return {
+        #     (
+        #         random.randrange(0, self.width),
+        #         random.randrange(0, self.height)
+        #     )
+        #     for _ in range(num)
+        # }
     
     
     def step(self):

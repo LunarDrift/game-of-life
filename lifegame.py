@@ -7,7 +7,9 @@ from controlsmenu import ControlsMenu
 from colorselector import ColorSelector
 from patternmenu import PatternMenu
 from hud import HUD
-from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR, BUTTON_LABEL_COLOR
+from constants import WIDTH, HEIGHT, FPS, GRAY, GRID_COLOR
+
+from debug import debug
 
 
 class LifeGame:
@@ -379,10 +381,13 @@ class LifeGame:
             grid_width, grid_height, GRID_COLOR, self.settings.show_grid
         )
 
-        self.hud.draw(self.screen, self.simulation.generations)
+        self.hud.draw(self.screen, self.simulation.generations, self.clock)
         self.settings.draw(self.screen)
         self.controls.draw(self.screen)
         self.pattern_menu.draw(self.screen)
+
+
+        debug(f"Live Cells: {len(self.simulation.positions)}", 500, 500)
 
         pygame.display.set_caption("Playing" if self.playing else "Paused")
         pygame.display.flip()
