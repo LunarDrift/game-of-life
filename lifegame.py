@@ -117,11 +117,10 @@ class LifeGame:
         self.playing = not self.playing
     
     def clear_grid(self):
-        self.simulation.positions.clear()
+        self.simulation.clear()
         self.playing = False
         self.count = 0
-        self.hud.reset_generations()
-        
+
     
     def randomize_grid(self):
         self._randomize_cells(WIDTH // self.settings.zoom, HEIGHT // self.settings.zoom)
@@ -286,16 +285,26 @@ class LifeGame:
         self.simulation.positions = positions
 
     def _can_draw(self):
-        if self.settings.open or self.controls.open or self.pattern_menu.open:
-            return False
+        return (
+            not self.menu_open() and
+            not self.mouse_over_menu() and
+            self.mouse_within_bounds()
+        )
+    
+    def menu_open(self):
+        return self.settings.open or self.controls.open or self.pattern_menu.open
+    
+    def mouse_over_menu(self):
+        mouse_pos = pygame.mouse.get_pos()
+        return (
+            self.settings.panel_rect.collidepoint(mouse_pos)
+            or self.controls.panel_rect.collidepoint(mouse_pos)
+            or self.pattern_menu.panel_rect.collidepoint(mouse_pos)
+        )
+    
+    def mouse_within_bounds(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        if self.settings.button_rect.collidepoint((mouse_x, mouse_y)):
-            return False
-        elif self.controls.button_rect.collidepoint((mouse_x, mouse_y)):
-            return False
-        elif self.pattern_menu.button_rect.collidepoint((mouse_x, mouse_y)):
-            return False
-        return True
+        return 0 <= mouse_x < WIDTH and 0 <= mouse_y < HEIGHT
 
     def _sync_setting(self, attr_name, apply_fn=None, getter=None):
         """Sync a setting from self.settings to the game/view, only if it changed."""
@@ -334,11 +343,6 @@ class LifeGame:
             apply_fn=lambda v: setattr(self.color_selector, "selected_color", v),
             getter=lambda: self.color_selector.selected_color,
         )
-        self.hud.update(
-            generations=self.simulation.generations,
-            cell_count=len(self.simulation.positions),
-            clock=self.clock,
-        )
 
     ############################## END HELPER METHODS ##############################
 
@@ -368,9 +372,9 @@ class LifeGame:
 
     def update_simulation(self, dt):
         """Update simulation state and view based on current settings."""
-
         self.update_simulation_settings()
         self.view.update_fade(self.simulation.positions, dt)
+        self.hud.update(cell_count=len(self.simulation.positions), clock=self.clock)
 
         # Step the simulation while playing
         if self.playing:
@@ -403,7 +407,7 @@ class LifeGame:
             grid_width, grid_height, GRID_COLOR, self.settings.show_grid
         )
 
-        self.hud.draw(self.screen)
+        self.hud.draw(self.screen, generations=self.simulation.generations)
         self.settings.draw(self.screen)
         self.controls.draw(self.screen)
         self.pattern_menu.draw(self.screen)
