@@ -361,6 +361,11 @@ class LifeGame:
             apply_fn=lambda v: setattr(self.color_selector, "selected_color", v),
             getter=lambda: self.color_selector.selected_color,
         )
+        self.hud.update(
+            generations=self.simulation.generations,
+            cell_count=len(self.simulation.positions),
+            clock=self.clock,
+        )
 
     ############################## END UPDATE ##############################
 
@@ -379,7 +384,7 @@ class LifeGame:
             grid_width, grid_height, GRID_COLOR, self.settings.show_grid
         )
 
-        self.hud.draw(self.screen, self.simulation.generations, self.clock, len(self.simulation.positions))
+        self.hud.draw(self.screen)
         self.settings.draw(self.screen)
         self.controls.draw(self.screen)
         self.pattern_menu.draw(self.screen)

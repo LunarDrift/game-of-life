@@ -7,6 +7,9 @@ class HUD:
         # HUD attributes
         # -------------------------------------------------
         self.font = font
+        self.generations = 0
+        self.cell_count = 0
+        self.clock = None
 
 
     def _draw_hud_bar(self, screen):
@@ -45,11 +48,19 @@ class HUD:
         text = self.font.render(f"Cells: {cell_count}", True, BUTTON_LABEL_COLOR)
         self._draw_element_bg(screen, text, position)
         screen.blit(text, (position[0] + 5, position[1] + 3))
+
+    def update(self, generations=None, cell_count=None, clock=None):
+        """Update HUD data."""
+        if generations is not None:
+            self.generations = generations
+        if cell_count is not None:
+            self.cell_count = cell_count
+        if clock is not None:
+            self.clock = clock
     
-    def draw(self, screen, generations, clock, cell_count=None):
+    def draw(self, screen):
         """Draw all HUD elements."""
         self._draw_hud_bar(screen)
-        self._draw_generation_tracker(screen, generations)
-        self._draw_fps_tracker(screen, clock)
-        if cell_count is not None:
-            self.draw_cell_count(screen, cell_count)
+        self._draw_generation_tracker(screen, self.generations)
+        self._draw_fps_tracker(screen, self.clock)
+        self.draw_cell_count(screen, self.cell_count)
