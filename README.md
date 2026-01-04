@@ -120,7 +120,6 @@ Refactoring has been an expected and encouraged part of the process.
 - Reduce complexity in event handling
 - Improve slider architecture
 - Visual polish
-- Possible performance optimizations for large grids
 
 ---
 
