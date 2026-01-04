@@ -2,7 +2,7 @@
 
 A work-in-progress implementation of **Conway’s Game of Life**, built in Python using **Pygame-ce**.
 
-![Conway](ex/conway.gif)
+![Conway](ex/conway1.gif)
 
 
 This project started as a relatively simple simulation, based on a [tutorial by Tech With Tim](https://www.youtube.com/watch?v=YDKuknw9WGs), but has grown into an exploration of:
@@ -26,6 +26,7 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 - Clear grid
 - Randomized starting population
 - Cell fade-out on death (inspired by optical illusion that made it seem like they were fading away)
+- Several popular premade patterns to choose from
 
 ### Settings Menu
 - **Zoom level** (grid cell size)
@@ -34,6 +35,15 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 - **Cell fade speed**
 - Toggle grid visibility
 - Mouse wheel support for adjusting sliders
+
+### Pattern Menu
+Oscillator, Spaceship, and 'Special' patterns to choose from:
+- Blinker
+- Glider
+- Pulsar
+- Gosper Glider Gun
+- LWSS
+and more
 
 ### Input & Controls
 - Mouse drawing on the grid
@@ -45,6 +55,7 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 - Grid overlay (toggleable)
 - Customizable cell colors
 - Simple, clean UI designed for clarity
+- Simple HUD to display various simulation statistics
 
 ---
 
@@ -67,16 +78,20 @@ The goal is not just to recreate the Game of Life, but to **practice ownership o
 ## Project Structure
 
 ```
-├── main.py                # Entrypoint to the simulation 
-├── simulation.py          # Game of Life logic  
-├── lifegame.py            # Main game loop and event handling
-├── view.py                # Rendering logic  
-├── settingsmenu.py        # Settings UI and sliders  
-├── controlsmenu.py        # Controls / help menu  
-├── colorselector.py       # Manages cell color selection
-├── slidersetting.py       # Manages slider labels/value display
-├── slider.py              # Reusable slider component  
-├── constants.py           # Shared constants
+game-of-life/
+├── ui/
+│   ├── settingsmenu.py         # Settings UI and sliders
+│   ├── controlsmenu.py         # Controls / help menu 
+│   ├── patternmenu.py          # Manages loading / displaying pattern buttons
+│   ├── colorselector.py        # Manages cell color selection
+│   ├── slidersetting.py        # Manages slider labels/value display
+│   ├── slider.py               # Reusable slider component
+│   ├── hud.py                  # Draws various HUD elements
+├── main.py                     # Entrypoint to the simulation 
+├── simulation.py               # Game of Life logic  
+├── lifegame.py                 # Main game loop and event handling
+├── view.py                     # Rendering logic
+├── constants.py                # Shared constants
 ```
 
 
